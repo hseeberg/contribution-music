@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contribution Music</title>
+<meta name="description" content="Turn any GitHub contribution graph into music.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday toy, precise and calm
+   IDEA the GitHub contribution graph behaves like a step sequencer; the page opens with a github.com address bar
+   PICTURE the grid itself, large; a pink playhead walks it in the chosen reading order
+   COLOUR GitHub ground, the five contribution greens, pink playhead accent
+   TYPE Mona Sans (GitHub's own face)
+   LAYOUT address bar + title; board full width; readout and controls side by side; phone stacks */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Mona Sans",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+a{color:inherit}
+.band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
+.top{padding-bottom:0;display:grid;gap:16px}
+.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;overflow:hidden}
+.addr:focus-within{outline:3px solid var(--hot);outline-offset:2px}
+.addr .host{display:flex;align-items:center;padding:0 2px 0 18px;color:var(--mute);font-size:17px;white-space:nowrap}
+.addr input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);padding:10px 8px;min-height:48px;outline:0}
+.addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px 32px}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;font-weight:800;text-wrap:balance}
+.lede{margin:0;color:var(--mute);max-width:60ch}
+.stats{margin:0;color:var(--mute);font-size:14px}
+.stats b{color:var(--ink);font-weight:600;white-space:nowrap}
+.status{margin:0;font-size:14px;color:var(--mute);min-height:1.5em}
+.status.err{color:var(--err)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,2.2vw,24px)}
+.bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modes{display:flex;flex-wrap:wrap;gap:6px}
+button,select{font:inherit;color:inherit}
+.mode{min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600}
+.mode span{color:var(--mute);font-weight:400;margin-left:6px}
+.mode[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mode[aria-pressed=true] span{color:inherit;opacity:.75}
+.play{min-height:48px;min-width:132px;padding:8px 22px;border:0;border-radius:999px;background:var(--go);color:#fff;font-weight:700;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;justify-content:center}
+.play svg{width:16px;height:16px;fill:currentColor}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.scroll{overflow-x:auto;padding:6px 2px;position:relative}
+#grid{display:grid;grid-template-columns:1.6em repeat(var(--n),minmax(0,1fr)) 7.4em;gap:clamp(2px,.5vw,5px);align-items:center;max-width:1000px}
+#grid.wide{grid-template-columns:1.6em repeat(var(--n),14px) 7.4em;gap:3px;max-width:none;width:max-content}
+.hd{font-size:13px;color:var(--mute);white-space:nowrap;overflow:visible;height:20px}
+.lab{font-size:13px;color:var(--mute);font-weight:600}
+.map{font-size:13px;color:var(--mute);padding-left:8px;white-space:nowrap}
+.map.on{color:var(--hot);font-weight:700}
+.cell{display:block;width:100%;aspect-ratio:1;border:0;padding:0;border-radius:22%;background:var(--c0);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.cell:hover{box-shadow:0 0 0 2px var(--mute)}
+.l1{background:var(--c1)}.l2{background:var(--c2)}.l3{background:var(--c3)}.l4{background:var(--c4)}
+.fut{visibility:hidden}
+.cell.pc{box-shadow:0 0 0 2px var(--hot)}
+.cell.hit{transform:scale(1.2);box-shadow:0 0 0 3px var(--hot),0 0 14px var(--hot)}
+.sc{height:10px;border-radius:3px;background:var(--c0);margin-top:4px}
+.s-pm{background:var(--mi)}.s-dor{background:var(--do)}.s-pd{background:var(--du)}.s-ins{background:var(--c4)}
+.sc.pc{box-shadow:0 0 0 2px var(--hot)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:14px;color:var(--mute)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
+.pos{margin:0;font-size:14px;color:var(--mute)}
+.big{margin:4px 0 2px;font-size:clamp(28px,4.4vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;min-height:1.1em;overflow-wrap:anywhere}
+.sub{margin:0 0 18px;color:var(--mute)}
+.how{border-top:1px solid var(--line);padding-top:14px}
+.how h2{font-size:18px;margin:0 0 4px}
+.how p{margin:0}
+.ctl{display:grid;gap:16px;align-content:start}
+.ctl label{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
+.ctl output{color:var(--ink);font-weight:600;white-space:nowrap}
+input[type=range]{width:100%;height:32px;accent-color:var(--go)}
+select{width:100%;min-height:44px;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+select:disabled{opacity:.6}
+.thump{border:1px solid var(--line);border-radius:10px;padding:12px 14px 14px;margin:0;display:grid;gap:12px}
+.thump[hidden]{display:none}
+.thump legend{font-weight:700;padding:0 6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));gap:12px 16px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
+.ghost:hover{border-color:var(--mute)}
+.note{font-size:14px;color:var(--mute);margin:0;padding-top:16px}
+@media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
+@media(max-width:420px){.mode span{display:none}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
+@media(prefers-reduced-motion:reduce){.cell{transition:none}.cell.hit{transform:none}}
+</style>
+</head>
+<body>
+<header class="band top">
+  <form class="addr" id="userForm" autocomplete="off">
+    <label class="host" for="user">github.com/</label>
+    <input id="user" name="user" placeholder="username" spellcheck="false" autocapitalize="off" maxlength="39" required>
+    <button type="submit">Load</button>
+  </form>
+  <p class="status" id="status" role="status"></p>
+  <div class="head">
+    <div>
+      <h1>Contribution Music</h1>
+      <p class="lede">Your GitHub graph as sheet music. Pick a reading mode, press Play and watch which square sounds.</p>
+    </div>
+    <p class="stats" id="stats"></p>
+  </div>
+</header>
+
+<main class="band">
+  <section class="panel">
+    <div class="bar">
+      <div class="modes" role="group" aria-label="Reading mode">
+        <button class="mode" data-m="A">A<span>Chords</span></button>
+        <button class="mode" data-m="B">B<span>Melody 7/8</span></button>
+        <button class="mode" data-m="C">C<span>Drums</span></button>
+        <button class="mode" data-m="D">D<span>Vikings</span></button>
+      </div>
+      <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
+    </div>
+    <div class="scroll" id="scroller"><div id="grid"></div></div>
+    <div class="legend" id="lg"></div>
+  </section>
+
+  <section class="row">
+    <div class="panel">
+      <p class="pos" id="pos">Ready</p>
+      <p class="big" id="now">Press Play</p>
+      <p class="sub" id="nowSub">The pink frame shows what is being read.</p>
+      <div class="how">
+        <h2 id="mTitle"></h2>
+        <p id="mDesc"></p>
+      </div>
+    </div>
+    <div class="panel ctl">
+      <div>
+        <label for="span">Time span</label>
+        <select id="span"><option value="all">From first contribution to today</option><option value="last">Last 12 months</option></select>
+      </div>
+      <div>
+        <label for="tempo">Tempo <output id="tempoOut"></output></label>
+        <input type="range" id="tempo" min="60" max="180" step="1" value="110">
+      </div>
+      <div>
+        <label for="scale">Scale</label>
+        <select id="scale"></select>
+      </div>
+      <div>
+        <label for="reps">Rounds</label>
+        <select id="reps"><option value="1">Once</option><option value="3">3 times</option><option value="0">Endless</option></select>
+      </div>
+      <fieldset class="thump" id="thump">
+        <legend>Sunday thump</legend>
+        <div class="two">
+          <div><label for="tNote">Pitch (same every Sunday)</label><select id="tNote"></select></div>
+          <div><label for="tVol">Volume <output id="tVolOut"></output></label><input type="range" id="tVol" min="0" max="100" step="1"></div>
+          <div><label for="tLen">Length <output id="tLenOut"></output></label><input type="range" id="tLen" min="0.3" max="2.5" step="0.1"></div>
+          <div><label for="tSub">Depth <output id="tSubOut"></output></label><input type="range" id="tSub" min="0" max="100" step="1"></div>
+        </div>
+        <button class="ghost" id="tTry" type="button">Try thump</button>
+      </fieldset>
+      <div class="btns">
+        <button class="ghost" id="reset" type="button">Reload data</button>
+        <button class="ghost" id="clear" type="button">Clear</button>
+      </div>
+      <p class="pos">Click a square to change its level: 0 → 1 → 2 → 3 → 4 → 0.</p>
+    </div>
+  </section>
+  <p class="note">Data: <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> (unofficial, cached for one hour). Sound is made in your browser. On iPhone, turn off silent mode or you will hear nothing.</p>
+</main>
+
+<script>
+{
+const DAY = 864e5;
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DS = ['S','M','T','W','T','F','S'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const API = 'https://github-contributions-api.jogruber.de/v4/';
+/* Offline fallback: hseeberg, Aug-Nov 2026, read by eye from a screenshot */
+const SAMPLE_START = '2026-08-23';
+const SAMPLE = [
+  [0,0,0,0,0,0,0,0,0,1,1,1,0,0],
+  [0,0,0,0,0,1,1,0,0,1,0,1,1,0],
+  [1,0,0,0,2,1,1,0,1,1,1,1,0,2],
+  [1,0,0,0,0,0,2,0,2,0,3,0,0,0],
+  [0,0,0,0,1,1,2,4,1,1,1,0,1,0],
+  [2,0,0,0,0,1,4,2,1,1,3,0,4,0],
+  [3,0,0,0,0,0,1,0,1,0,3,0,0,0]
+];
+const NN = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const nn = m => NN[m % 12] + (Math.floor(m / 12) - 1);
+const hz = m => 440 * 2 ** ((m - 69) / 12);
+const SCALES = {
+  pd: {name: 'Major pentatonic (C)', s: 'C major', rows: [74,72,69,67,64,62,60], lv: [60,64,67,72]},
+  pm: {name: 'Minor pentatonic (A)', s: 'A minor', rows: [72,69,67,64,62,60,57], lv: [57,60,64,69]},
+  dor: {name: 'Dorian (D)', s: 'D dorian', rows: [72,71,69,67,65,64,62], lv: [62,65,69,74]},
+  ins: {name: 'In-sen, Japanese (C)', s: 'C in-sen', rows: [73,72,70,67,65,61,60], lv: [60,65,67,72]}
+};
+const DRUMS = ['shaker','hi-hat','clap','high tom','snare','kick','low tom'];
+const DK = ['shaker','hat','clap','tomH','snare','kick','tomL'];
+const D_LV = [62, 65, 69, 72];
+const MODES = {
+  A: {t: 'A · Left to right', d: 'Column = beat. Row = pitch (Sunday highest, Saturday lowest). Level = volume and length. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
+  B: {t: 'B · Top to bottom', d: 'Each week is read top to bottom, day by day. Week = a 7-beat bar (7/8). Level = pitch, 0 = rest. Auto scale: 1–2 active days = A minor, 3–4 = D dorian, 5–7 = C major; an empty week keeps the previous one. All three share one key, so changes sound like chords Am → Dm → C.', mul: .5, lg: null},
+  C: {t: 'C · Drum machine', d: 'Row = instrument. Column = step. Level = hit strength. The pattern repeats.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
+  D: {t: 'D · Viking ensemble', d: 'Read like B: top to bottom, a 7-beat bar grouped 3 + 4. The frame drum always hits beats 1 and 4; strong days (level 3–4) add a hit. The lyre plays a note from the day level in D minor pentatonic. A D + A drone plays throughout and swells in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
+};
+
+const $ = id => document.getElementById(id);
+const grid = $('grid');
+let data = [], orig = [], w0 = 0, nW = 0, todayIdx = 0, total = null, sample = false;
+let mode = 'B', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = '';
+const repsBy = {A: 0, B: 3, C: 0, D: 3};
+const thump = {m: 36, vol: 60, len: 1.4, sub: 60};
+let cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1;
+let ctx, bus, noiseBuf, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
+
+/* ---------- dates & data ---------- */
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+const todayUTC = () => { const n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); };
+const sunday = t => t - new Date(t).getUTCDay() * DAY;
+const dt = (c, r) => new Date(w0 + (7 * c + (r || 0)) * DAY);
+const fmt = d => MON[d.getUTCMonth()] + ' ' + d.getUTCDate();
+const fut = (c, r) => 7 * c + r > todayIdx;
+
+function build(list) {
+  const today = todayUTC(), lvl = new Map();
+  let first = null;
+  total = 0;
+  for (const x of list) {
+    const t = parse(String(x.date)), l = Math.max(0, Math.min(4, Number(x.level) || 0));
+    if (t > today) continue;
+    lvl.set(t, l);
+    total += Number(x.count) || 0;
+    if (l && (first === null || t < first)) first = t;
+  }
+  if (span === 'last' || first === null) w0 = sunday(today - 364 * DAY);
+  else w0 = sunday(first);
+  todayIdx = Math.round((today - w0) / DAY);
+  nW = Math.floor(todayIdx / 7) + 1;
+  data = Array.from({length: 7}, (_, r) => Array.from({length: nW}, (_, c) => lvl.get(w0 + (7 * c + r) * DAY) || 0));
+  orig = data.map(r => r.slice());
+  return first !== null;
+}
+function sampleList() {
+  const s = parse(SAMPLE_START), out = [];
+  SAMPLE.forEach((row, r) => row.forEach((l, c) => out.push({date: new Date(s + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})));
+  return out;
+}
+function setStatus(msg, err) { const el = $('status'); el.textContent = msg; el.classList.toggle('err', !!err); }
+
+async function load(u) {
+  stop();
+  user = u;
+  $('user').value = u;
+  setStatus('Loading contributions for ' + u + '…');
+  try {
+    const r = await fetch(API + encodeURIComponent(u) + '?y=' + (span === 'last' ? 'last' : 'all'));
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.error || !Array.isArray(j.contributions)) throw new Error(r.status === 404 ? 'User not found.' : (j.error || 'Could not load data (HTTP ' + r.status + ').'));
+    sample = false;
+    const any = build(j.contributions);
+    setStatus(any ? 'Loaded ' + u + '. Live data, refreshed hourly.' : u + ' has no public contributions in this span.');
+  } catch (e) {
+    sample = true;
+    build(sampleList());
+    const msg = e instanceof TypeError ? 'Could not reach the data service.' : (e.message || 'Could not load data.');
+    setStatus(msg + ' Showing a sample graph instead.', true);
+  }
+  render();
+}
+
+/* ---------- view ---------- */
+const stepDur = () => 60 / bpm * MODES[mode].mul;
+const density = c => { let n = 0; for (let r = 0; r < 7; r++) if (data[r][c]) n++; return n; };
+function autoKey(c) {
+  for (let k = c; k >= 0; k--) { const n = density(k); if (n) return n <= 2 ? 'pm' : n <= 4 ? 'dor' : 'pd'; }
+  return 'pm';
+}
+const keyB = c => skB === 'auto' ? autoKey(c) : skB;
+const scB = c => SCALES[keyB(c)];
+function steps() {
+  const s = [];
+  for (let c = 0; c < nW; c++) {
+    if (mode === 'B' || mode === 'D') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); }
+    else s.push({c});
+  }
+  return s;
+}
+function mapLabel(r) {
+  if (mode === 'A') return nn(SCALES[sk].rows[r]);
+  if (mode === 'B') return 'beat ' + (r + 1);
+  if (mode === 'D') return 'beat ' + (r + 1) + (r === 0 || r === 3 ? ' · drum' : '');
+  return DRUMS[r];
+}
+function render() {
+  grid.style.setProperty('--n', nW);
+  grid.classList.toggle('wide', nW > 26);
+  let h = '<div class="hd"></div>';
+  for (let c = 0; c < nW; c++) {
+    const d = dt(c), p = dt(c - 1);
+    h += '<div class="hd">' + ((c === 0 || d.getUTCMonth() !== p.getUTCMonth()) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === 0 ? ' ' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
+  }
+  h += '<div class="hd"></div>';
+  for (let r = 0; r < 7; r++) {
+    h += '<div class="lab" title="' + DAYS[r] + '">' + DS[r] + '</div>';
+    for (let c = 0; c < nW; c++) {
+      const f = fut(c, r);
+      h += '<button class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '"' + (f ? ' tabindex="-1" aria-hidden="true"' : '') + ' aria-label="' + DAYS[r] + ' ' + fmt(dt(c, r)) + ', level ' + data[r][c] + '"></button>';
+    }
+    h += '<div class="map" id="map' + r + '">' + mapLabel(r) + '</div>';
+  }
+  if (mode === 'B') {
+    h += '<div class="lab"></div>';
+    for (let c = 0; c < nW; c++) { const k = keyB(c); h += '<div class="sc s-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + SCALES[k].s + '"></div>'; }
+    h += '<div class="map">scale</div>';
+  }
+  grid.innerHTML = h;
+  cellAt = Array.from({length: 7}, () => []);
+  grid.querySelectorAll('.cell').forEach(el => { cellAt[+el.dataset.r][+el.dataset.c] = el; });
+  mapEls = DS.map((_, r) => $('map' + r));
+  lit = [];
+  fillScale();
+  info();
+  const sc = $('scroller'); sc.scrollLeft = sc.scrollWidth;
+}
+function fillScale() {
+  const sel = $('scale');
+  sel.disabled = mode === 'D';
+  $('reps').value = String(repsBy[mode]);
+  if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed)</option>'; return; }
+  const opts = (mode === 'B' ? [['auto', 'Auto: week density decides']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
+  sel.innerHTML = opts.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
+  sel.value = mode === 'B' ? skB : sk;
+}
+function info() {
+  let act = 0;
+  for (let r = 0; r < 7; r++) for (let c = 0; c < nW; c++) if (data[r][c]) act++;
+  const n = steps().length, R = repsBy[mode], sec = Math.round(n * stepDur());
+  const len = s => s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s';
+  $('stats').innerHTML = (sample ? 'Sample · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + nW + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
+  const M = MODES[mode];
+  $('mTitle').textContent = M.t;
+  $('mDesc').textContent = M.d;
+  const auto = mode === 'B' && skB === 'auto';
+  const lg = M.lg || (auto ? ['rest','root','third','fifth','octave'] : ['rest'].concat(SCALES[skB].lv.map(nn)));
+  $('lg').innerHTML = '<span>Level →</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + i + ': ' + t + '</span>').join('')
+    + (auto ? '<span>Scale →</span><span><i style="background:var(--mi)"></i>A minor: 1–2 days</span><span><i style="background:var(--do)"></i>D dorian: 3–4</span><span><i style="background:var(--du)"></i>C major: 5–7</span>' : '');
+  document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
+  $('tempoOut').textContent = bpm + ' BPM';
+  $('thump').hidden = mode !== 'B';
+  $('tVolOut').textContent = thump.vol ? thump.vol + ' %' : 'off';
+  $('tLenOut').textContent = thump.len.toFixed(1) + ' s';
+  $('tSubOut').textContent = thump.sub + ' %';
+}
+
+/* ---------- audio ---------- */
+function initAudio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const comp = ctx.createDynamicsCompressor(); comp.connect(ctx.destination);
+  const master = ctx.createGain(); master.gain.value = .8; master.connect(comp);
+  bus = ctx.createGain(); bus.connect(master);
+  const len = ctx.sampleRate * 2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3; }
+  const cv = ctx.createConvolver(), wet = ctx.createGain();
+  cv.buffer = ir; wet.gain.value = .22;
+  bus.connect(cv); cv.connect(wet); wet.connect(master);
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+}
+function env(t, amp, a, dec) {
+  const g = ctx.createGain();
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(amp, t + a);
+  g.gain.exponentialRampToValueAtTime(.0001, t + a + dec);
+  g.connect(bus);
+  return g;
+}
+function osc(type, f, t, end) { const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(end); return o; }
+function noise(t, end) { const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true; s.start(t); s.stop(end); return s; }
+function filt(type, f) { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; return b; }
+function bell(t, m, amp, br, dur) {
+  const g = env(t, amp, .005, dur);
+  [[1, 1], [2, .35 * br], [3, .12 * br]].forEach(([k, a]) => {
+    const o = osc('sine', hz(m) * k, t, t + dur + .1), og = ctx.createGain();
+    og.gain.value = a; o.connect(og); og.connect(g);
+  });
+}
+const ksCache = {};
+function ksBuf(m) {
+  if (ksCache[m]) return ksCache[m];
+  const sr = ctx.sampleRate, N = Math.round(sr / hz(m)), len = Math.round(sr * 2.4);
+  const b = ctx.createBuffer(1, len, sr), d = b.getChannelData(0), rb = new Float32Array(N);
+  let prev = 0;
+  for (let i = 0; i < N; i++) { const v = Math.random() * 2 - 1; rb[i] = (v + prev) / 2; prev = v; }
+  for (let i = 0, p = 0; i < len; i++) { const nx = (p + 1) % N, v = rb[p]; d[i] = v; rb[p] = .997 * .5 * (v + rb[nx]); p = nx; }
+  return (ksCache[m] = b);
+}
+function lyre(t, m, amp) {
+  const s = ctx.createBufferSource(), g = ctx.createGain(), lp = filt('lowpass', 3200);
+  s.buffer = ksBuf(m); g.gain.value = amp;
+  s.connect(lp); lp.connect(g); g.connect(bus); s.start(t);
+}
+function tromm(t, amp, deepHit) {
+  const f0 = deepHit ? 60 : 95, o = osc('sine', f0 * 1.7, t, t + 1);
+  o.frequency.exponentialRampToValueAtTime(f0, t + .08);
+  o.connect(env(t, amp, .003, deepHit ? .8 : .4));
+  const lp = filt('lowpass', deepHit ? 900 : 1800);
+  noise(t, t + .15).connect(lp);
+  lp.connect(env(t, amp * .35, .001, .08));
+}
+function drone(t, bar, dens) {
+  const g = ctx.createGain(), amp = .05 + .016 * dens, lp = filt('lowpass', 520);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .3);
+  g.gain.setValueAtTime(amp, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + .8);
+  lp.connect(g); g.connect(bus);
+  [[38, -4], [38, 4], [45, 0]].forEach(([m, cents]) => { const o = osc('sawtooth', hz(m), t, t + bar + .9); o.detune.value = cents; o.connect(lp); });
+}
+function deep(t) {
+  if (!thump.vol) return;
+  const f = hz(thump.m), lp = filt('lowpass', 320), L = thump.len;
+  lp.connect(env(t, thump.vol / 100 * .55, .004, L));
+  const o = osc('sine', f * 2, t, t + L + .2);
+  o.frequency.exponentialRampToValueAtTime(f, t + .07);
+  o.connect(lp);
+  [['sine', f / 2, thump.sub / 100], ['triangle', f, .25]].forEach(([ty, fr, a]) => {
+    if (!a) return;
+    const x = osc(ty, fr, t, t + L + .2), g = ctx.createGain();
+    g.gain.value = a; x.connect(g); g.connect(lp);
+  });
+}
+function drum(k, t, amp) {
+  if (k === 'kick') { const o = osc('sine', 155, t, t + .45); o.frequency.exponentialRampToValueAtTime(45, t + .15); o.connect(env(t, amp, .003, .4)); }
+  else if (k === 'tomH' || k === 'tomL') { const b = k === 'tomH' ? 160 : 90, o = osc('sine', b + 60, t, t + .4); o.frequency.exponentialRampToValueAtTime(b, t + .2); o.connect(env(t, amp * .8, .003, .35)); }
+  else if (k === 'snare') { const f = filt('bandpass', 3000); noise(t, t + .25).connect(f); f.connect(env(t, amp * .7, .002, .2)); osc('triangle', 190, t, t + .15).connect(env(t, amp * .4, .002, .1)); }
+  else if (k === 'clap') { const f = filt('bandpass', 1500); noise(t, t + .3).connect(f); [0, .012, .024].forEach((d, i) => f.connect(env(t + d, amp * .6, .001, i === 2 ? .2 : .01))); }
+  else if (k === 'hat') { const f = filt('highpass', 7000); noise(t, t + .08).connect(f); f.connect(env(t, amp * .5, .001, .05)); }
+  else { const f = filt('highpass', 5000); noise(t, t + .18).connect(f); f.connect(env(t, amp * .4, .02, .12)); }
+}
+function sched(s, t) {
+  if (mode === 'D') {
+    const l = data[s.r][s.c];
+    if (s.r === 0) { drone(t, stepDur() * 7, density(s.c)); tromm(t, .55, true); }
+    if (s.r === 3) tromm(t, .3, false);
+    if (l) { lyre(t, D_LV[l - 1], .3 + .08 * l); if (l >= 3 && s.r !== 0 && s.r !== 3) tromm(t, .2 + .1 * l, false); }
+    return;
+  }
+  if (mode === 'B') {
+    const l = data[s.r][s.c], sc = scB(s.c);
+    if (s.r === 0) deep(t);
+    if (l) bell(t, sc.lv[l - 1], .22, .8, .5);
+    return;
+  }
+  const sc = SCALES[sk];
+  let sum = 0;
+  for (let r = 0; r < 7; r++) {
+    const l = data[r][s.c];
+    if (!l) continue;
+    sum += l;
+    if (mode === 'A') bell(t, sc.rows[r], .05 + .04 * l, .5 + .2 * l, .6 + .4 * l);
+    else drum(DK[r], t, .3 + .15 * l);
+  }
+  if (mode === 'A' && sum) bell(t, sc.rows[6] - 24, Math.min(.2, .05 + .012 * sum), .2, 1.2);
+}
+function tick() {
+  const S = steps();
+  if (!S.length) { stop(); return; }
+  while (nextT < ctx.currentTime + .12) {
+    if (idx >= S.length) {
+      ring++;
+      const R = repsBy[mode];
+      if (!R || ring < R) idx = 0;
+      else { clearInterval(timer); timer = null; endAt = nextT; return; }
+    }
+    sched(S[idx], nextT);
+    queue.push({t: nextT, s: S[idx], i: idx, n: S.length, ring, R: repsBy[mode]});
+    nextT += stepDur();
+    idx++;
+  }
+}
+
+/* ---------- playhead ---------- */
+function unlight() { lit.forEach(el => el.classList.remove('pc', 'hit', 'on')); lit = []; }
+function light(el, hit) { if (!el) return; el.classList.add('pc'); if (hit) el.classList.add('hit'); lit.push(el); }
+function mark(r) { mapEls[r].classList.add('on'); lit.push(mapEls[r]); }
+function follow(c) {
+  if (c === lastCol || nW <= 26) return;
+  lastCol = c;
+  const sc = $('scroller'), el = cellAt[0][c];
+  if (el) sc.scrollLeft = el.offsetLeft - sc.clientWidth / 2;
+}
+function show(q) {
+  unlight();
+  const s = q.s;
+  follow(s.c);
+  if (mode === 'D') {
+    const l = data[s.r][s.c], dr = s.r === 0 || s.r === 3 || l >= 3;
+    light(cellAt[s.r][s.c], l > 0); mark(s.r);
+    $('now').textContent = l ? nn(D_LV[l - 1]) + (dr ? ' + drum' : '') : (dr ? 'drum' : 'rest');
+    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · level ' + l + ' · beat ' + (s.r + 1) + '/7 · drone D2 + A2';
+  } else if (mode === 'B') {
+    const l = data[s.r][s.c], sc = scB(s.c);
+    light(cellAt[s.r][s.c], l > 0); light($('sc' + s.c), false); mark(s.r);
+    $('now').textContent = l ? nn(sc.lv[l - 1]) : 'rest';
+    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · level ' + l + ' · beat ' + (s.r + 1) + '/7 · ' + sc.s + (skB === 'auto' ? ' (' + density(s.c) + ' active days)' : '');
+  } else {
+    const hits = [], sc = SCALES[sk];
+    for (let r = 0; r < 7; r++) {
+      const l = data[r][s.c];
+      light(cellAt[r][s.c], l > 0);
+      if (l) { hits.push(mode === 'A' ? nn(sc.rows[r]) : DRUMS[r]); mark(r); }
+    }
+    const k = hits.length, w = mode === 'A' ? (k === 1 ? 'note' : 'notes') : (k === 1 ? 'hit' : 'hits');
+    $('now').textContent = k ? hits.join(' · ') : 'silence';
+    $('nowSub').textContent = 'Week of ' + fmt(dt(s.c)) + ' · ' + k + ' ' + w;
+  }
+  $('pos').textContent = 'Round ' + (q.ring + 1) + (q.R ? ' / ' + q.R : '') + ' · Step ' + (q.i + 1) + ' / ' + q.n;
+}
+function frame() {
+  const now = ctx.currentTime;
+  let cur = null;
+  while (queue.length && queue[0].t <= now) cur = queue.shift();
+  if (cur) show(cur);
+  if (!timer && now > endAt + stepDur()) { stop(); return; }
+  raf = requestAnimationFrame(frame);
+}
+function setPlayBtn(on) {
+  $('play').innerHTML = on
+    ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h10v10H3z"/></svg><span>Stop</span>'
+    : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span>';
+}
+function start() {
+  initAudio();
+  ctx.resume().catch(() => {});
+  idx = 0; ring = 0; queue = []; endAt = Infinity; lastCol = -1;
+  nextT = ctx.currentTime + .08;
+  clearInterval(timer);
+  timer = setInterval(tick, 25);
+  tick();
+  cancelAnimationFrame(raf);
+  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); }
+}
+function stop() {
+  clearInterval(timer); timer = null; queue = [];
+  cancelAnimationFrame(raf); raf = 0;
+  unlight();
+  setPlayBtn(false);
+  $('pos').textContent = 'Stopped';
+}
+const playing = () => raf !== 0;
+function restartIfPlaying() { if (playing()) start(); }
+
+/* ---------- events ---------- */
+const validUser = u => /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(u);
+$('userForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const u = $('user').value.trim().replace(/^@/, '');
+  if (!validUser(u)) { setStatus('That is not a valid GitHub username.', true); return; }
+  if (location.hash !== '#' + u) location.hash = u; else load(u);
+});
+window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
+grid.addEventListener('click', e => {
+  const el = e.target.closest('.cell');
+  if (!el || el.classList.contains('fut')) return;
+  const r = +el.dataset.r, c = +el.dataset.c;
+  data[r][c] = (data[r][c] + 1) % 5;
+  const x = $('scroller').scrollLeft;
+  render();
+  $('scroller').scrollLeft = x;
+  cellAt[r][c]?.focus({preventScroll: true});
+});
+document.querySelectorAll('.mode').forEach(el => el.addEventListener('click', () => { mode = el.dataset.m; render(); restartIfPlaying(); }));
+$('play').addEventListener('click', () => { if (playing()) stop(); else start(); });
+$('tempo').addEventListener('input', e => { bpm = +e.target.value; info(); });
+$('scale').addEventListener('change', e => { if (mode === 'B') skB = e.target.value; else if (mode !== 'D') sk = e.target.value; render(); });
+$('reps').addEventListener('change', e => { repsBy[mode] = +e.target.value; info(); });
+$('span').addEventListener('change', e => { span = e.target.value; load(user); });
+$('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
+[['tVol', 'vol'], ['tLen', 'len'], ['tSub', 'sub']].forEach(([id, k]) => $(id).addEventListener('input', e => { thump[k] = +e.target.value; info(); }));
+$('tTry').addEventListener('click', () => { initAudio(); ctx.resume().catch(() => {}); deep(ctx.currentTime + .03); });
+$('reset').addEventListener('click', () => { data = orig.map(r => r.slice()); render(); });
+$('clear').addEventListener('click', () => { data = data.map(r => r.map(() => 0)); render(); });
+
+/* ---------- boot ---------- */
+const tn = [];
+for (let m = 28; m <= 48; m++) tn.push('<option value="' + m + '">' + nn(m) + ' · ' + Math.round(hz(m)) + ' Hz</option>');
+$('tNote').innerHTML = tn.join('');
+$('tNote').value = thump.m;
+$('tVol').value = thump.vol;
+$('tLen').value = thump.len;
+$('tSub').value = thump.sub;
+const h0 = decodeURIComponent(location.hash.slice(1));
+load(validUser(h0) ? h0 : 'hseeberg');
+}
+</script>
+</body>
+</html>
