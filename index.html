@@ -14,7 +14,7 @@
    COLOUR GitHub ground, the five contribution greens, pink playhead accent
    TYPE Mona Sans (GitHub's own face)
    LAYOUT address bar + title; board full width; readout and controls side by side; phone stacks */
-:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72)}
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72);--ok:light-dark(#1a7f37,#3fb950);--focus:light-dark(#0969da,#4493f8)}
 :root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
@@ -22,19 +22,37 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 "Mona Sans",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
 a{color:inherit}
 .band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
-.top{padding-bottom:0;display:grid;gap:16px}
-.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;overflow:hidden}
-.addr:focus-within{outline:3px solid var(--hot);outline-offset:2px}
+.top{padding-bottom:0;display:grid;gap:12px}
+.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;overflow:hidden;margin-top:8px}
+.addr:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.addr.invalid{border-color:var(--err);box-shadow:inset 0 0 0 1px var(--err)}
 .addr .host{display:flex;align-items:center;padding:0 2px 0 18px;color:var(--mute);font-size:17px;white-space:nowrap}
 .addr input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);padding:10px 8px;min-height:48px;outline:0}
-.addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap}
-.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px 32px}
+.addr input::placeholder{color:var(--mute);font-weight:400}
+.okmark{display:flex;align-items:center;padding-right:10px;color:var(--ok)}
+.okmark[hidden]{display:none}
+.okmark svg{width:18px;height:18px}
+.addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap;min-width:96px}
+.addr.busy button{cursor:progress;opacity:.85}
+.status{display:flex;gap:8px;align-items:flex-start;font-size:14px;min-height:1.6em;max-width:640px;color:var(--ink)}
+.status:empty{display:none}
+.status p{margin:0}
+.status svg{flex:none;width:16px;height:16px;margin-top:3px}
+.status a{color:inherit;text-underline-offset:2px}
+.st-info{color:var(--mute)}.st-info svg{color:var(--mute)}
+.st-ok svg{color:var(--ok)}
+.st-warn svg{color:var(--du)}
+.st-err{color:var(--err)}
+.retry{min-height:32px;padding:2px 12px;margin-left:4px;border:1px solid var(--line);border-radius:6px;background:var(--bg);cursor:pointer;font-size:14px}
+.spin{flex:none;width:14px;height:14px;margin-top:4px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.playwrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.reps{width:auto;min-height:48px;border-radius:999px;padding:8px 14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 h1{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;font-weight:800;text-wrap:balance}
 .lede{margin:0;color:var(--mute);max-width:60ch}
 .stats{margin:0;color:var(--mute);font-size:14px}
 .stats b{color:var(--ink);font-weight:600;white-space:nowrap}
-.status{margin:0;font-size:14px;color:var(--mute);min-height:1.5em}
-.status.err{color:var(--err)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,2.2vw,24px)}
 .bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:18px}
 .modes{display:flex;flex-wrap:wrap;gap:6px}
@@ -45,7 +63,7 @@ button,select{font:inherit;color:inherit}
 .mode[aria-pressed=true] span{color:inherit;opacity:.75}
 .play{min-height:48px;min-width:132px;padding:8px 22px;border:0;border-radius:999px;background:var(--go);color:#fff;font-weight:700;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;justify-content:center}
 .play svg{width:16px;height:16px;fill:currentColor}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .scroll{overflow-x:auto;padding:6px 2px;position:relative}
 #grid{display:grid;grid-template-columns:1.6em repeat(var(--n),minmax(0,1fr)) 7.4em;gap:clamp(2px,.5vw,5px);align-items:center;max-width:1000px}
 #grid.wide{grid-template-columns:1.6em repeat(var(--n),14px) 7.4em;gap:3px;max-width:none;width:max-content}
@@ -87,24 +105,23 @@ select:disabled{opacity:.6}
 .note{font-size:14px;color:var(--mute);margin:0;padding-top:16px}
 @media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
 @media(max-width:420px){.mode span{display:none}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
-@media(prefers-reduced-motion:reduce){.cell{transition:none}.cell.hit{transform:none}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}.cell{transition:none}.cell.hit{transform:none}}
 </style>
 </head>
 <body>
 <header class="band top">
-  <form class="addr" id="userForm" autocomplete="off">
-    <label class="host" for="user">github.com/</label>
-    <input id="user" name="user" placeholder="username" spellcheck="false" autocapitalize="off" maxlength="39" required>
-    <button type="submit">Load</button>
-  </form>
-  <p class="status" id="status" role="status"></p>
-  <div class="head">
-    <div>
-      <h1>Contribution Music</h1>
-      <p class="lede">Your GitHub graph as sheet music. Pick a reading mode, press Play and watch which square sounds.</p>
-    </div>
-    <p class="stats" id="stats"></p>
+  <div>
+    <h1>Contribution Music</h1>
+    <p class="lede">Your GitHub graph as sheet music. Pick a reading mode, press Play and watch which square sounds.</p>
   </div>
+  <form class="addr" id="userForm" autocomplete="off" novalidate>
+    <label class="host" for="user">github.com/</label>
+    <input id="user" name="gh-handle" placeholder="your-username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
+    <span class="okmark" id="okMark" hidden aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <button type="submit" id="loadBtn">Load</button>
+  </form>
+  <div class="status" id="status" aria-live="polite"></div>
+  <p class="stats" id="stats"></p>
 </header>
 
 <main class="band">
@@ -116,7 +133,11 @@ select:disabled{opacity:.6}
         <button class="mode" data-m="C">C<span>Drums</span></button>
         <button class="mode" data-m="D">D<span>Vikings</span></button>
       </div>
-      <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
+      <div class="playwrap">
+        <label class="sr" for="reps">Rounds</label>
+        <select id="reps" class="reps"><option value="1">1 round</option><option value="3">3 rounds</option><option value="0">Loop</option></select>
+        <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
+      </div>
     </div>
     <div class="scroll" id="scroller"><div id="grid"></div></div>
     <div class="legend" id="lg"></div>
@@ -144,10 +165,6 @@ select:disabled{opacity:.6}
       <div>
         <label for="scale">Scale</label>
         <select id="scale"></select>
-      </div>
-      <div>
-        <label for="reps">Rounds</label>
-        <select id="reps"><option value="1">Once</option><option value="3">3 times</option><option value="0">Endless</option></select>
       </div>
       <fieldset class="thump" id="thump">
         <legend>Sunday thump</legend>
@@ -209,7 +226,7 @@ const MODES = {
 const $ = id => document.getElementById(id);
 const grid = $('grid');
 let data = [], orig = [], w0 = 0, nW = 0, todayIdx = 0, total = null, sample = false;
-let mode = 'B', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = '';
+let mode = 'B', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
 const repsBy = {A: 0, B: 3, C: 0, D: 3};
 const thump = {m: 36, vol: 60, len: 1.4, sub: 60};
 let cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1;
@@ -247,27 +264,74 @@ function sampleList() {
   SAMPLE.forEach((row, r) => row.forEach((l, c) => out.push({date: new Date(s + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})));
   return out;
 }
-function setStatus(msg, err) { const el = $('status'); el.textContent = msg; el.classList.toggle('err', !!err); }
-
-async function load(u) {
-  stop();
-  user = u;
-  $('user').value = u;
-  setStatus('Loading contributions for ' + u + '…');
-  try {
-    const r = await fetch(API + encodeURIComponent(u) + '?y=' + (span === 'last' ? 'last' : 'all'));
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.error || !Array.isArray(j.contributions)) throw new Error(r.status === 404 ? 'User not found.' : (j.error || 'Could not load data (HTTP ' + r.status + ').'));
-    sample = false;
-    const any = build(j.contributions);
-    setStatus(any ? 'Loaded ' + u + '. Live data, refreshed hourly.' : u + ' has no public contributions in this span.');
-  } catch (e) {
-    sample = true;
-    build(sampleList());
-    const msg = e instanceof TypeError ? 'Could not reach the data service.' : (e.message || 'Could not load data.');
-    setStatus(msg + ' Showing a sample graph instead.', true);
+/* ---------- field + status states ----------
+   idle    neutral border, blue focus ring
+   busy    "Loading…" on button, spinner in status
+   ok      green check in field, success line with profile link
+   invalid red border + aria-invalid, red message: only for errors the user can fix
+   warn    service problems are not the user's fault: field stays neutral, retry offered */
+const ICON = {
+  info: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4M8 4.6v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  ok: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.3l2 2 4-4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8L15 14.2H1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6.3v3.6M8 12v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  err: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  load: '<span class="spin" aria-hidden="true"></span>'
+};
+const profile = u => ({a: 'https://github.com/' + encodeURIComponent(u), t: 'github.com/' + u});
+function setStatus(kind, parts) {
+  const el = $('status');
+  el.className = 'status st-' + kind;
+  el.innerHTML = ICON[kind] || '';
+  const p = document.createElement('p');
+  parts.forEach(x => {
+    if (typeof x === 'string') p.append(x);
+    else if (x.a) { const a = document.createElement('a'); a.href = x.a; a.textContent = x.t; a.target = '_blank'; a.rel = 'noopener'; p.append(a); }
+    else if (x.retry) { const b = document.createElement('button'); b.type = 'button'; b.className = 'retry'; b.textContent = 'Try again'; b.addEventListener('click', () => load(x.retry, x.demo)); p.append(' ', b); }
+  });
+  el.append(p);
+}
+function setField(state) {
+  const f = $('userForm'), inp = $('user');
+  f.classList.toggle('invalid', state === 'invalid');
+  f.classList.toggle('busy', state === 'busy');
+  if (state === 'invalid') inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+  $('okMark').hidden = state !== 'ok';
+  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : 'Load';
+  $('loadBtn').disabled = state === 'busy';
+}
+function fail(kind, u, demo) {
+  if (!loaded) { sample = true; build(sampleList()); render(); }
+  if (kind === 'notfound') {
+    setField('invalid');
+    setStatus('err', ['No GitHub user called “' + u + '”. Check the spelling, or open ', profile(u), ' to confirm the account exists.' + (loaded ? ' The previous graph stays.' : '')]);
+    $('user').focus();
+  } else {
+    setField('idle');
+    setStatus('warn', ['The data service is not responding, so “' + u + '” could not be checked. Your username may be correct. ' + (loaded ? 'The previous graph stays.' : 'Showing a sample graph.'), {retry: u, demo}]);
   }
+}
+async function load(u, demo) {
+  stop();
+  if (!demo) $('user').value = u;
+  setField('busy');
+  setStatus('load', ['Loading contributions for ' + u + '…']);
+  let r, j;
+  try {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
+    r = await fetch(API + encodeURIComponent(u) + '?y=' + (span === 'last' ? 'last' : 'all'), {signal: ac.signal});
+    clearTimeout(to);
+    j = await r.json().catch(() => null);
+  } catch (e) { fail('service', u, demo); return; }
+  const notFound = r.status === 404 || (j && typeof j.error === 'string' && /not.?found|404|does not exist|no user/i.test(j.error));
+  if (notFound) { fail('notfound', u, demo); return; }
+  if (!r.ok || !j || !Array.isArray(j.contributions)) { fail('service', u, demo); return; }
+  user = u; loaded = true; sample = false;
+  const any = build(j.contributions);
   render();
+  setField(demo || !any ? 'idle' : 'ok');
+  if (!any) setStatus('warn', ['“' + u + '” has no public contributions ' + (span === 'last' ? 'in the last 12 months' : 'yet') + '. Check the spelling on ', profile(u), '. Private contributions only show if the user turns them on in their profile settings.']);
+  else if (demo) setStatus('info', ['Demo: the graph of ', profile(u), '. Enter your username to hear yours.']);
+  else setStatus('ok', ['Loaded ', profile(u), '. Live data, refreshed hourly.']);
 }
 
 /* ---------- view ---------- */
@@ -560,10 +624,12 @@ function restartIfPlaying() { if (playing()) start(); }
 const validUser = u => /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(u);
 $('userForm').addEventListener('submit', e => {
   e.preventDefault();
-  const u = $('user').value.trim().replace(/^@/, '');
-  if (!validUser(u)) { setStatus('That is not a valid GitHub username.', true); return; }
+  const u = $('user').value.trim().replace(/^@/, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/[/?#].*$/, '');
+  if (!u) { setField('invalid'); setStatus('err', ['Enter a GitHub username, for example octocat.']); $('user').focus(); return; }
+  if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” is not a valid GitHub username. Use letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
   if (location.hash !== '#' + u) location.hash = u; else load(u);
 });
+$('user').addEventListener('input', () => { if ($('userForm').classList.contains('invalid') || !$('okMark').hidden) setField('idle'); });
 window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
 grid.addEventListener('click', e => {
   const el = e.target.closest('.cell');
@@ -580,7 +646,7 @@ $('play').addEventListener('click', () => { if (playing()) stop(); else start();
 $('tempo').addEventListener('input', e => { bpm = +e.target.value; info(); });
 $('scale').addEventListener('change', e => { if (mode === 'B') skB = e.target.value; else if (mode !== 'D') sk = e.target.value; render(); });
 $('reps').addEventListener('change', e => { repsBy[mode] = +e.target.value; info(); });
-$('span').addEventListener('change', e => { span = e.target.value; load(user); });
+$('span').addEventListener('change', e => { span = e.target.value; load(user, !location.hash); });
 $('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
 [['tVol', 'vol'], ['tLen', 'len'], ['tSub', 'sub']].forEach(([id, k]) => $(id).addEventListener('input', e => { thump[k] = +e.target.value; info(); }));
 $('tTry').addEventListener('click', () => { initAudio(); ctx.resume().catch(() => {}); deep(ctx.currentTime + .03); });
@@ -596,7 +662,7 @@ $('tVol').value = thump.vol;
 $('tLen').value = thump.len;
 $('tSub').value = thump.sub;
 const h0 = decodeURIComponent(location.hash.slice(1));
-load(validUser(h0) ? h0 : 'hseeberg');
+if (validUser(h0)) load(h0); else load('hseeberg', true);
 }
 </script>
 </body>
