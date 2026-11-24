@@ -47,7 +47,13 @@ a{color:inherit}
 .spin{flex:none;width:14px;height:14px;margin-top:4px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .playwrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.reps{width:auto;min-height:48px;border-radius:999px;padding:8px 14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
+.seg button{min-height:42px;padding:6px 14px;border:0;border-radius:999px;background:transparent;color:var(--mute);font-weight:600;cursor:pointer;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.sel{position:relative;display:block}
+.sel select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer}
+.sel::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 h1{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;font-weight:800;text-wrap:balance}
 .lede{margin:0;color:var(--mute);max-width:60ch}
@@ -104,7 +110,7 @@ select:disabled{opacity:.6}
 .ghost:hover{border-color:var(--mute)}
 .note{font-size:14px;color:var(--mute);margin:0;padding-top:16px}
 @media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
-@media(max-width:420px){.mode span{display:none}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
+@media(max-width:420px){.mode{padding:8px 12px}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}.cell{transition:none}.cell.hit{transform:none}}
 </style>
 </head>
@@ -112,13 +118,13 @@ select:disabled{opacity:.6}
 <header class="band top">
   <div>
     <h1>Contribution Music</h1>
-    <p class="lede">Your GitHub graph as sheet music. Pick a reading mode, press Play and watch which square sounds.</p>
+    <p class="lede">Turn a GitHub contribution graph into music. Enter a username, choose how to read the graph, and press Play.</p>
   </div>
   <form class="addr" id="userForm" autocomplete="off" novalidate>
     <label class="host" for="user">github.com/</label>
-    <input id="user" name="gh-handle" placeholder="your-username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
+    <input id="user" name="gh-handle" placeholder="username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
     <span class="okmark" id="okMark" hidden aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <button type="submit" id="loadBtn">Load</button>
+    <button type="submit" id="loadBtn">Load graph</button>
   </form>
   <div class="status" id="status" aria-live="polite"></div>
   <p class="stats" id="stats"></p>
@@ -127,15 +133,16 @@ select:disabled{opacity:.6}
 <main class="band">
   <section class="panel">
     <div class="bar">
-      <div class="modes" role="group" aria-label="Reading mode">
-        <button class="mode" data-m="A">A<span>Chords</span></button>
-        <button class="mode" data-m="B">B<span>Melody 7/8</span></button>
-        <button class="mode" data-m="C">C<span>Drums</span></button>
-        <button class="mode" data-m="D">D<span>Vikings</span></button>
+      <div class="modes" role="group" aria-label="How to read the graph">
+        <button class="mode" data-m="A">Chords</button>
+        <button class="mode" data-m="B">Melody</button>
+        <button class="mode" data-m="C">Drums</button>
+        <button class="mode" data-m="D">Viking</button>
       </div>
       <div class="playwrap">
-        <label class="sr" for="reps">Rounds</label>
-        <select id="reps" class="reps"><option value="1">1 round</option><option value="3">3 rounds</option><option value="0">Loop</option></select>
+        <div class="seg" id="reps" role="group" aria-label="How many times to play">
+          <button type="button" data-r="1">Once</button><button type="button" data-r="3">3 times</button><button type="button" data-r="0">Loop</button>
+        </div>
         <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
       </div>
     </div>
@@ -147,7 +154,7 @@ select:disabled{opacity:.6}
     <div class="panel">
       <p class="pos" id="pos">Ready</p>
       <p class="big" id="now">Press Play</p>
-      <p class="sub" id="nowSub">The pink frame shows what is being read.</p>
+      <p class="sub" id="nowSub">The pink frame shows which square is playing.</p>
       <div class="how">
         <h2 id="mTitle"></h2>
         <p id="mDesc"></p>
@@ -155,8 +162,8 @@ select:disabled{opacity:.6}
     </div>
     <div class="panel ctl">
       <div>
-        <label for="span">Time span</label>
-        <select id="span"><option value="all">From first contribution to today</option><option value="last">Last 12 months</option></select>
+        <label for="span">Time range</label>
+        <span class="sel"><select id="span"><option value="all">Since first contribution</option><option value="last">Last 12 months</option></select></span>
       </div>
       <div>
         <label for="tempo">Tempo <output id="tempoOut"></output></label>
@@ -164,26 +171,26 @@ select:disabled{opacity:.6}
       </div>
       <div>
         <label for="scale">Scale</label>
-        <select id="scale"></select>
+        <span class="sel"><select id="scale"></select></span>
       </div>
       <fieldset class="thump" id="thump">
         <legend>Sunday thump</legend>
         <div class="two">
-          <div><label for="tNote">Pitch (same every Sunday)</label><select id="tNote"></select></div>
+          <div><label for="tNote">Pitch</label><span class="sel"><select id="tNote"></select></span></div>
           <div><label for="tVol">Volume <output id="tVolOut"></output></label><input type="range" id="tVol" min="0" max="100" step="1"></div>
           <div><label for="tLen">Length <output id="tLenOut"></output></label><input type="range" id="tLen" min="0.3" max="2.5" step="0.1"></div>
-          <div><label for="tSub">Depth <output id="tSubOut"></output></label><input type="range" id="tSub" min="0" max="100" step="1"></div>
+          <div><label for="tSub">Sub-bass <output id="tSubOut"></output></label><input type="range" id="tSub" min="0" max="100" step="1"></div>
         </div>
-        <button class="ghost" id="tTry" type="button">Try thump</button>
+        <button class="ghost" id="tTry" type="button">Play one thump</button>
       </fieldset>
       <div class="btns">
-        <button class="ghost" id="reset" type="button">Reload data</button>
-        <button class="ghost" id="clear" type="button">Clear</button>
+        <button class="ghost" id="reset" type="button">Undo my changes</button>
+        <button class="ghost" id="clear" type="button">Clear all squares</button>
       </div>
-      <p class="pos">Click a square to change its level: 0 → 1 → 2 → 3 → 4 → 0.</p>
+      <p class="pos">Try your own pattern: click a square to make it brighter. After the brightest step it turns empty again.</p>
     </div>
   </section>
-  <p class="note">Data: <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> (unofficial, cached for one hour). Sound is made in your browser. On iPhone, turn off silent mode or you will hear nothing.</p>
+  <p class="note">No sound on iPhone? Turn off silent mode. Contribution data comes from the unofficial <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> and updates every hour. All sound is made in your browser.</p>
 </main>
 
 <script>
@@ -217,10 +224,10 @@ const DRUMS = ['shaker','hi-hat','clap','high tom','snare','kick','low tom'];
 const DK = ['shaker','hat','clap','tomH','snare','kick','tomL'];
 const D_LV = [62, 65, 69, 72];
 const MODES = {
-  A: {t: 'A · Left to right', d: 'Column = beat. Row = pitch (Sunday highest, Saturday lowest). Level = volume and length. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
-  B: {t: 'B · Top to bottom', d: 'Each week is read top to bottom, day by day. Week = a 7-beat bar (7/8). Level = pitch, 0 = rest. Auto scale: 1–2 active days = A minor, 3–4 = D dorian, 5–7 = C major; an empty week keeps the previous one. All three share one key, so changes sound like chords Am → Dm → C.', mul: .5, lg: null},
-  C: {t: 'C · Drum machine', d: 'Row = instrument. Column = step. Level = hit strength. The pattern repeats.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
-  D: {t: 'D · Viking ensemble', d: 'Read like B: top to bottom, a 7-beat bar grouped 3 + 4. The frame drum always hits beats 1 and 4; strong days (level 3–4) add a hit. The lyre plays a note from the day level in D minor pentatonic. A D + A drone plays throughout and swells in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
+  A: {t: 'Chords · read left to right', d: 'Each column is one beat. Each row is a pitch: Sunday is highest, Saturday lowest. Brighter squares play louder and longer. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
+  B: {t: 'Melody · read top to bottom', d: 'Each week is one bar of 7 beats, Sunday first. Brighter squares play higher notes, empty days are rests, and a low thump marks every Sunday. The scale follows how busy the week is: 1–2 active days play A minor, 3–4 play D dorian, 5–7 play C major. The three scales share the same notes, so the changes sound like chords moving: Am, Dm, C.', mul: .5, lg: null},
+  C: {t: 'Drums · read left to right', d: 'Each row is one drum and each column one step. Brighter squares hit harder.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
+  D: {t: 'Viking · read top to bottom', d: 'Read like Melody: each week is one bar of 7 beats, felt as 3 + 4. A frame drum hits beats 1 and 4, and the two brightest levels add a hit. A lyre plays each day as a note in D minor pentatonic. A low drone hums underneath and grows louder in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
 };
 
 const $ = id => document.getElementById(id);
@@ -296,25 +303,25 @@ function setField(state) {
   f.classList.toggle('busy', state === 'busy');
   if (state === 'invalid') inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
   $('okMark').hidden = state !== 'ok';
-  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : 'Load';
+  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : 'Load graph';
   $('loadBtn').disabled = state === 'busy';
 }
 function fail(kind, u, demo) {
   if (!loaded) { sample = true; build(sampleList()); render(); }
   if (kind === 'notfound') {
     setField('invalid');
-    setStatus('err', ['No GitHub user called “' + u + '”. Check the spelling, or open ', profile(u), ' to confirm the account exists.' + (loaded ? ' The previous graph stays.' : '')]);
+    setStatus('err', ['We can’t find a GitHub user called “' + u + '”. Check the spelling, or open ', profile(u), ' to see if the account exists.']);
     $('user').focus();
   } else {
     setField('idle');
-    setStatus('warn', ['The data service is not responding, so “' + u + '” could not be checked. Your username may be correct. ' + (loaded ? 'The previous graph stays.' : 'Showing a sample graph.'), {retry: u, demo}]);
+    setStatus('warn', ['We can’t reach the contribution data right now. Your username is probably fine. ' + (loaded ? 'The last graph stays on screen.' : 'Here is a sample graph in the meantime.'), {retry: u, demo}]);
   }
 }
 async function load(u, demo) {
   stop();
   if (!demo) $('user').value = u;
   setField('busy');
-  setStatus('load', ['Loading contributions for ' + u + '…']);
+  setStatus('load', ['Loading the graph for ' + u + '…']);
   let r, j;
   try {
     const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
@@ -329,9 +336,9 @@ async function load(u, demo) {
   const any = build(j.contributions);
   render();
   setField(demo || !any ? 'idle' : 'ok');
-  if (!any) setStatus('warn', ['“' + u + '” has no public contributions ' + (span === 'last' ? 'in the last 12 months' : 'yet') + '. Check the spelling on ', profile(u), '. Private contributions only show if the user turns them on in their profile settings.']);
-  else if (demo) setStatus('info', ['Demo: the graph of ', profile(u), '. Enter your username to hear yours.']);
-  else setStatus('ok', ['Loaded ', profile(u), '. Live data, refreshed hourly.']);
+  if (!any) setStatus('warn', [profile(u), ' has no public contributions ' + (span === 'last' ? 'in the last 12 months' : 'yet') + '. If this is your account, you can show private contributions in your GitHub profile settings.']);
+  else if (demo) setStatus('info', ['You are hearing a demo graph from ', profile(u), '. Enter your username to hear your own.']);
+  else setStatus('ok', ['Showing the graph for ', profile(u), '. Data updates every hour.']);
 }
 
 /* ---------- view ---------- */
@@ -370,7 +377,7 @@ function render() {
     h += '<div class="lab" title="' + DAYS[r] + '">' + DS[r] + '</div>';
     for (let c = 0; c < nW; c++) {
       const f = fut(c, r);
-      h += '<button class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '"' + (f ? ' tabindex="-1" aria-hidden="true"' : '') + ' aria-label="' + DAYS[r] + ' ' + fmt(dt(c, r)) + ', level ' + data[r][c] + '"></button>';
+      h += '<button class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '"' + (f ? ' tabindex="-1" aria-hidden="true"' : '') + ' aria-label="' + DAYS[r] + ' ' + fmt(dt(c, r)) + ', brightness ' + data[r][c] + ' of 4"></button>';
     }
     h += '<div class="map" id="map' + r + '">' + mapLabel(r) + '</div>';
   }
@@ -391,9 +398,9 @@ function render() {
 function fillScale() {
   const sel = $('scale');
   sel.disabled = mode === 'D';
-  $('reps').value = String(repsBy[mode]);
-  if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed)</option>'; return; }
-  const opts = (mode === 'B' ? [['auto', 'Auto: week density decides']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
+  document.querySelectorAll('#reps button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === repsBy[mode]));
+  if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed in Viking)</option>'; return; }
+  const opts = (mode === 'B' ? [['auto', 'Auto: follows how busy each week is']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
   sel.innerHTML = opts.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
   sel.value = mode === 'B' ? skB : sk;
 }
@@ -402,14 +409,14 @@ function info() {
   for (let r = 0; r < 7; r++) for (let c = 0; c < nW; c++) if (data[r][c]) act++;
   const n = steps().length, R = repsBy[mode], sec = Math.round(n * stepDur());
   const len = s => s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s';
-  $('stats').innerHTML = (sample ? 'Sample · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + nW + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
+  $('stats').innerHTML = (sample ? 'Sample graph · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + nW + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
   const M = MODES[mode];
   $('mTitle').textContent = M.t;
   $('mDesc').textContent = M.d;
   const auto = mode === 'B' && skB === 'auto';
   const lg = M.lg || (auto ? ['rest','root','third','fifth','octave'] : ['rest'].concat(SCALES[skB].lv.map(nn)));
-  $('lg').innerHTML = '<span>Level →</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + i + ': ' + t + '</span>').join('')
-    + (auto ? '<span>Scale →</span><span><i style="background:var(--mi)"></i>A minor: 1–2 days</span><span><i style="background:var(--do)"></i>D dorian: 3–4</span><span><i style="background:var(--du)"></i>C major: 5–7</span>' : '');
+  $('lg').innerHTML = '<span>Brightness:</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + t + '</span>').join('')
+    + (auto ? '<span>Scale bar:</span><span><i style="background:var(--mi)"></i>A minor (1–2 active days)</span><span><i style="background:var(--do)"></i>D dorian (3–4)</span><span><i style="background:var(--du)"></i>C major (5–7)</span>' : '');
   document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
   $('tempoOut').textContent = bpm + ' BPM';
   $('thump').hidden = mode !== 'B';
@@ -567,12 +574,12 @@ function show(q) {
     const l = data[s.r][s.c], dr = s.r === 0 || s.r === 3 || l >= 3;
     light(cellAt[s.r][s.c], l > 0); mark(s.r);
     $('now').textContent = l ? nn(D_LV[l - 1]) + (dr ? ' + drum' : '') : (dr ? 'drum' : 'rest');
-    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · level ' + l + ' · beat ' + (s.r + 1) + '/7 · drone D2 + A2';
+    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4 · beat ' + (s.r + 1) + ' of 7 · drone D2 + A2';
   } else if (mode === 'B') {
     const l = data[s.r][s.c], sc = scB(s.c);
     light(cellAt[s.r][s.c], l > 0); light($('sc' + s.c), false); mark(s.r);
     $('now').textContent = l ? nn(sc.lv[l - 1]) : 'rest';
-    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · level ' + l + ' · beat ' + (s.r + 1) + '/7 · ' + sc.s + (skB === 'auto' ? ' (' + density(s.c) + ' active days)' : '');
+    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4 · beat ' + (s.r + 1) + ' of 7 · ' + sc.s + (skB === 'auto' ? ' (' + density(s.c) + ' active days)' : '');
   } else {
     const hits = [], sc = SCALES[sk];
     for (let r = 0; r < 7; r++) {
@@ -584,7 +591,7 @@ function show(q) {
     $('now').textContent = k ? hits.join(' · ') : 'silence';
     $('nowSub').textContent = 'Week of ' + fmt(dt(s.c)) + ' · ' + k + ' ' + w;
   }
-  $('pos').textContent = 'Round ' + (q.ring + 1) + (q.R ? ' / ' + q.R : '') + ' · Step ' + (q.i + 1) + ' / ' + q.n;
+  $('pos').textContent = 'Round ' + (q.ring + 1) + (q.R ? ' of ' + q.R : '') + ' · step ' + (q.i + 1) + ' of ' + q.n;
 }
 function frame() {
   const now = ctx.currentTime;
@@ -626,7 +633,7 @@ $('userForm').addEventListener('submit', e => {
   e.preventDefault();
   const u = $('user').value.trim().replace(/^@/, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/[/?#].*$/, '');
   if (!u) { setField('invalid'); setStatus('err', ['Enter a GitHub username, for example octocat.']); $('user').focus(); return; }
-  if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” is not a valid GitHub username. Use letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
+  if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” can’t be a GitHub username. Use only letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
   if (location.hash !== '#' + u) location.hash = u; else load(u);
 });
 $('user').addEventListener('input', () => { if ($('userForm').classList.contains('invalid') || !$('okMark').hidden) setField('idle'); });
@@ -645,7 +652,7 @@ document.querySelectorAll('.mode').forEach(el => el.addEventListener('click', ()
 $('play').addEventListener('click', () => { if (playing()) stop(); else start(); });
 $('tempo').addEventListener('input', e => { bpm = +e.target.value; info(); });
 $('scale').addEventListener('change', e => { if (mode === 'B') skB = e.target.value; else if (mode !== 'D') sk = e.target.value; render(); });
-$('reps').addEventListener('change', e => { repsBy[mode] = +e.target.value; info(); });
+document.querySelectorAll('#reps button').forEach(b => b.addEventListener('click', () => { repsBy[mode] = +b.dataset.r; fillScale(); info(); }));
 $('span').addEventListener('change', e => { span = e.target.value; load(user, !location.hash); });
 $('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
 [['tVol', 'vol'], ['tLen', 'len'], ['tSub', 'sub']].forEach(([id, k]) => $(id).addEventListener('input', e => { thump[k] = +e.target.value; info(); }));
