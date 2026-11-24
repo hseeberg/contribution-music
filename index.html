@@ -14,7 +14,7 @@
    COLOUR GitHub ground, the five contribution greens, pink playhead accent
    TYPE Mona Sans (GitHub's own face)
    LAYOUT address bar + title; board full width; readout and controls side by side; phone stacks */
-:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72);--ok:light-dark(#1a7f37,#3fb950);--focus:light-dark(#0969da,#4493f8)}
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72);--ok:light-dark(#1a7f37,#3fb950);--focus:light-dark(#0969da,#4493f8);--or:light-dark(#bc4c00,#f0883e)}
 :root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
@@ -24,8 +24,13 @@ a{color:inherit}
 .band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
 .top{padding-bottom:0;display:grid;gap:12px}
 .addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;overflow:hidden;margin-top:8px}
-.addr:focus-within{outline:3px solid var(--focus);outline-offset:2px}
-.addr.invalid{border-color:var(--err);box-shadow:inset 0 0 0 1px var(--err)}
+.addr:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent)}
+.addr.invalid:focus-within{border-color:var(--err);box-shadow:0 0 0 3px color-mix(in srgb,var(--err) 30%,transparent)}
+.addr input{-webkit-appearance:none;appearance:none}
+.addr input:focus,.addr input:focus-visible{outline:none}
+.addr input::-webkit-search-cancel-button,.addr input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.addr button:focus-visible{outline:3px solid #fff;outline-offset:-6px}
+.addr.invalid{border-color:var(--err)}
 .addr .host{display:flex;align-items:center;padding:0 2px 0 18px;color:var(--mute);font-size:17px;white-space:nowrap}
 .addr input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);padding:10px 8px;min-height:48px;outline:0}
 .addr input::placeholder{color:var(--mute);font-weight:400}
@@ -86,6 +91,18 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 .sc{height:10px;border-radius:3px;background:var(--c0);margin-top:4px}
 .s-pm{background:var(--mi)}.s-dor{background:var(--do)}.s-pd{background:var(--du)}.s-ins{background:var(--c4)}
 .sc.pc{box-shadow:0 0 0 2px var(--hot)}
+.c-Am{background:var(--mi)}.c-F{background:var(--do)}.c-C{background:var(--du)}.c-G{background:var(--or)}
+.trim{position:relative;height:44px;touch-action:none;cursor:pointer}
+.trim::before{content:"";position:absolute;left:0;right:0;top:18px;height:8px;border-radius:4px;background:var(--c0)}
+.tsel{position:absolute;top:14px;height:16px;border-radius:6px;background:color-mix(in srgb,var(--hot) 30%,transparent);border:2px solid var(--hot)}
+.th{position:absolute;top:0;width:28px;height:44px;margin-left:-14px;border:0;background:transparent;cursor:ew-resize;padding:0}
+.th::after{content:"";position:absolute;left:10px;top:7px;width:8px;height:30px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
+.cell.out,.sc.out{opacity:.2}
+.cell.gap,.sc.gap{opacity:.45}
+.trimbar{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:12px;font-size:14px}
+.trimbar p{margin:0;font-weight:600;flex:1 1 16em}
+.trimbar label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.trimbar input{width:20px;height:20px;accent-color:var(--go)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:14px;color:var(--mute)}
 .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
 .row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
@@ -122,11 +139,12 @@ select:disabled{opacity:.6}
   </div>
   <form class="addr" id="userForm" autocomplete="off" novalidate>
     <label class="host" for="user">github.com/</label>
-    <input id="user" name="gh-handle" placeholder="username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
-    <span class="okmark" id="okMark" hidden aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <input id="user" type="search" enterkeyhint="go" name="gh-handle" placeholder="username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
+    <span class="okmark" id="okMark" hidden title="Graph loaded" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <button type="submit" id="loadBtn">Load graph</button>
   </form>
   <div class="status" id="status" aria-live="polite"></div>
+  <p class="sr" id="srMsg" aria-live="polite"></p>
   <p class="stats" id="stats"></p>
 </header>
 
@@ -134,10 +152,11 @@ select:disabled{opacity:.6}
   <section class="panel">
     <div class="bar">
       <div class="modes" role="group" aria-label="How to read the graph">
-        <button class="mode" data-m="A">Chords</button>
-        <button class="mode" data-m="B">Melody</button>
-        <button class="mode" data-m="C">Drums</button>
+        <button class="mode" data-m="E">80s</button>
         <button class="mode" data-m="D">Viking</button>
+        <button class="mode" data-m="C">Drums</button>
+        <button class="mode" data-m="B">Melody</button>
+        <button class="mode" data-m="A">Chords</button>
       </div>
       <div class="playwrap">
         <div class="seg" id="reps" role="group" aria-label="How many times to play">
@@ -147,6 +166,13 @@ select:disabled{opacity:.6}
       </div>
     </div>
     <div class="scroll" id="scroller"><div id="grid"></div></div>
+    <div class="trimbar">
+      <p id="trimInfo"></p>
+      <label><input type="checkbox" id="shorten" checked> Skip long silences</label>
+      <button class="ghost" id="trimFit" type="button">Fit to activity</button>
+      <button class="ghost" id="trimReset" type="button">Play everything</button>
+    </div>
+    <p class="pos">Drag the two handles under the graph to choose which weeks play.</p>
     <div class="legend" id="lg"></div>
   </section>
 
@@ -211,6 +237,9 @@ const SAMPLE = [
   [2,0,0,0,0,1,4,2,1,1,3,0,4,0],
   [3,0,0,0,0,0,1,0,1,0,3,0,0,0]
 ];
+/* Gappy public graph used when the hash is #sample-gaps: tests the trim tool */
+const GAPS_START = '2025-11-23';
+const GAPS = [[13,6,2],[26,5,1],[40,4,1],[40,6,1],[41,0,4],[41,1,4],[41,2,4],[41,3,2],[41,4,4],[41,5,2],[42,1,2],[42,3,2],[45,0,1],[46,0,1],[51,3,1]];
 const NN = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
 const nn = m => NN[m % 12] + (Math.floor(m / 12) - 1);
 const hz = m => 440 * 2 ** ((m - 69) / 12);
@@ -223,21 +252,30 @@ const SCALES = {
 const DRUMS = ['shaker','hi-hat','clap','high tom','snare','kick','low tom'];
 const DK = ['shaker','hat','clap','tomH','snare','kick','tomL'];
 const D_LV = [62, 65, 69, 72];
+/* 80s: week density picks the chord of the classic minor progression */
+const CH = {
+  Am: {root: 45, pad: [57, 60, 64], lead: [69, 72, 76, 81]},
+  F: {root: 41, pad: [53, 57, 60], lead: [65, 69, 72, 77]},
+  C: {root: 48, pad: [55, 60, 64], lead: [72, 76, 79, 84]},
+  G: {root: 43, pad: [55, 59, 62], lead: [67, 71, 74, 79]}
+};
+const chordOf = n => n <= 2 ? 'Am' : n === 3 ? 'F' : n === 4 ? 'C' : 'G';
 const MODES = {
   A: {t: 'Chords · read left to right', d: 'Each column is one beat. Each row is a pitch: Sunday is highest, Saturday lowest. Brighter squares play louder and longer. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
   B: {t: 'Melody · read top to bottom', d: 'Each week is one bar of 7 beats, Sunday first. Brighter squares play higher notes, empty days are rests, and a low thump marks every Sunday. The scale follows how busy the week is: 1–2 active days play A minor, 3–4 play D dorian, 5–7 play C major. The three scales share the same notes, so the changes sound like chords moving: Am, Dm, C.', mul: .5, lg: null},
   C: {t: 'Drums · read left to right', d: 'Each row is one drum and each column one step. Brighter squares hit harder.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
+  E: {t: '80s · read top to bottom', d: 'Each week is one bar in 4/4: seven days plus a drum fill. A drum machine with a big gated snare keeps the beat, and the bass pulses on every step. How busy the week is picks the chord: 1–2 active days play Am, 3 play F, 4 play C, 5–7 play G. Brighter days play higher notes on the lead synth, with echo.', mul: .5, lg: ['rest','root','third','fifth','octave']},
   D: {t: 'Viking · read top to bottom', d: 'Read like Melody: each week is one bar of 7 beats, felt as 3 + 4. A frame drum hits beats 1 and 4, and the two brightest levels add a hit. A lyre plays each day as a note in D minor pentatonic. A low drone hums underneath and grows louder in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
 };
 
 const $ = id => document.getElementById(id);
 const grid = $('grid');
 let data = [], orig = [], w0 = 0, nW = 0, todayIdx = 0, total = null, sample = false;
-let mode = 'B', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
-const repsBy = {A: 0, B: 3, C: 0, D: 3};
+let mode = 'E', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
+const repsBy = {A: 0, B: 3, C: 0, D: 3, E: 3};
 const thump = {m: 36, vol: 60, len: 1.4, sub: 60};
-let cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1;
-let ctx, bus, noiseBuf, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
+let cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1, trimA = 0, trimB = 0, shorten = true, dragging = null;
+let ctx, bus, dry, gateIn, noiseBuf, echoIn, echoDl, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
 
 /* ---------- dates & data ---------- */
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
@@ -264,9 +302,11 @@ function build(list) {
   nW = Math.floor(todayIdx / 7) + 1;
   data = Array.from({length: 7}, (_, r) => Array.from({length: nW}, (_, c) => lvl.get(w0 + (7 * c + r) * DAY) || 0));
   orig = data.map(r => r.slice());
+  trimA = 0; trimB = nW - 1;
   return first !== null;
 }
 function sampleList() {
+  if (location.hash === '#sample-gaps') { const g = parse(GAPS_START); return GAPS.map(([c, r, l]) => ({date: new Date(g + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})); }
   const s = parse(SAMPLE_START), out = [];
   SAMPLE.forEach((row, r) => row.forEach((l, c) => out.push({date: new Date(s + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})));
   return out;
@@ -287,6 +327,7 @@ const ICON = {
 const profile = u => ({a: 'https://github.com/' + encodeURIComponent(u), t: 'github.com/' + u});
 function setStatus(kind, parts) {
   const el = $('status');
+  $('srMsg').textContent = '';
   el.className = 'status st-' + kind;
   el.innerHTML = ICON[kind] || '';
   const p = document.createElement('p');
@@ -338,7 +379,7 @@ async function load(u, demo) {
   setField(demo || !any ? 'idle' : 'ok');
   if (!any) setStatus('warn', [profile(u), ' has no public contributions ' + (span === 'last' ? 'in the last 12 months' : 'yet') + '. If this is your account, you can show private contributions in your GitHub profile settings.']);
   else if (demo) setStatus('info', ['You are hearing a demo graph from ', profile(u), '. Enter your username to hear your own.']);
-  else setStatus('ok', ['Showing the graph for ', profile(u), '. Data updates every hour.']);
+  else { $('status').className = 'status'; $('status').innerHTML = ''; $('srMsg').textContent = 'Showing the graph for ' + u + '.'; }
 }
 
 /* ---------- view ---------- */
@@ -349,11 +390,23 @@ function autoKey(c) {
   return 'pm';
 }
 const keyB = c => skB === 'auto' ? autoKey(c) : skB;
+function chordKey(c) { for (let k = c; k >= 0; k--) { const n = density(k); if (n) return chordOf(n); } return 'Am'; }
 const scB = c => SCALES[keyB(c)];
+function skipSet() {
+  const S = new Set();
+  if (!shorten) return S;
+  let run = [];
+  const flush = () => { if (run.length > 1) run.slice(1).forEach(c => S.add(c)); run = []; };
+  for (let c = trimA; c <= trimB; c++) { if (density(c) === 0) run.push(c); else flush(); }
+  flush();
+  return S;
+}
 function steps() {
-  const s = [];
-  for (let c = 0; c < nW; c++) {
+  const s = [], skip = skipSet();
+  for (let c = trimA; c <= trimB; c++) {
+    if (skip.has(c)) continue;
     if (mode === 'B' || mode === 'D') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); }
+    else if (mode === 'E') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); if (!fut(c, 6)) s.push({c, r: 7}); }
     else s.push({c});
   }
   return s;
@@ -362,15 +415,21 @@ function mapLabel(r) {
   if (mode === 'A') return nn(SCALES[sk].rows[r]);
   if (mode === 'B') return 'beat ' + (r + 1);
   if (mode === 'D') return 'beat ' + (r + 1) + (r === 0 || r === 3 ? ' · drum' : '');
+  if (mode === 'E') return 'beat ' + (r + 1) + (r === 0 || r === 4 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
   return DRUMS[r];
 }
 function render() {
   grid.style.setProperty('--n', nW);
   grid.classList.toggle('wide', nW > 26);
   let h = '<div class="hd"></div>';
+  const starts = [];
+  for (let c = 1; c < nW; c++) if (dt(c).getUTCMonth() !== dt(c - 1).getUTCMonth()) starts.push(c);
+  const lab = new Set(starts);
+  if (!starts.length || starts[0] >= 3) lab.add(0);
+  const firstLab = Math.min(...lab);
   for (let c = 0; c < nW; c++) {
-    const d = dt(c), p = dt(c - 1);
-    h += '<div class="hd">' + ((c === 0 || d.getUTCMonth() !== p.getUTCMonth()) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === 0 ? ' ' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
+    const d = dt(c);
+    h += '<div class="hd">' + (lab.has(c) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === firstLab ? ' ' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
   }
   h += '<div class="hd"></div>';
   for (let r = 0; r < 7; r++) {
@@ -386,36 +445,71 @@ function render() {
     for (let c = 0; c < nW; c++) { const k = keyB(c); h += '<div class="sc s-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + SCALES[k].s + '"></div>'; }
     h += '<div class="map">scale</div>';
   }
+  if (mode === 'E') {
+    h += '<div class="lab"></div>';
+    for (let c = 0; c < nW; c++) { const k = chordKey(c); h += '<div class="sc c-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + k + '"></div>'; }
+    h += '<div class="map">chord</div>';
+  }
+  h += '<div class="lab"></div><div class="trim" id="trim" style="grid-column:2 / span ' + nW + '"><div class="tsel" id="tsel"></div>'
+    + '<button class="th" id="thA" type="button" role="slider" aria-label="First week to play" aria-valuemin="0"></button>'
+    + '<button class="th" id="thB" type="button" role="slider" aria-label="Last week to play" aria-valuemin="0"></button></div><div class="map">play range</div>';
   grid.innerHTML = h;
   cellAt = Array.from({length: 7}, () => []);
   grid.querySelectorAll('.cell').forEach(el => { cellAt[+el.dataset.r][+el.dataset.c] = el; });
   mapEls = DS.map((_, r) => $('map' + r));
   lit = [];
   fillScale();
-  info();
+  applyTrim();
   const sc = $('scroller'); sc.scrollLeft = sc.scrollWidth;
 }
 function fillScale() {
   const sel = $('scale');
-  sel.disabled = mode === 'D';
+  sel.disabled = mode === 'D' || mode === 'E';
   document.querySelectorAll('#reps button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === repsBy[mode]));
   if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed in Viking)</option>'; return; }
+  if (mode === 'E') { sel.innerHTML = '<option>Chords picked automatically (80s)</option>'; return; }
   const opts = (mode === 'B' ? [['auto', 'Auto: follows how busy each week is']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
   sel.innerHTML = opts.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
   sel.value = mode === 'B' ? skB : sk;
 }
+function applyTrim() {
+  const skip = skipSet(), pct = v => (v / nW * 100) + '%';
+  for (let c = 0; c < nW; c++) {
+    const out = c < trimA || c > trimB, gap = skip.has(c);
+    for (let r = 0; r < 7; r++) { const el = cellAt[r][c]; if (el) { el.classList.toggle('out', out); el.classList.toggle('gap', gap); } }
+    const sb = $('sc' + c); if (sb) { sb.classList.toggle('out', out); sb.classList.toggle('gap', gap); }
+  }
+  const sel = $('tsel'); sel.style.left = pct(trimA); sel.style.width = pct(trimB - trimA + 1);
+  [['thA', trimA, trimA], ['thB', trimB, trimB + 1]].forEach(([id, v, x]) => {
+    const el = $(id);
+    el.style.left = pct(x);
+    el.setAttribute('aria-valuemax', nW - 1);
+    el.setAttribute('aria-valuenow', v);
+    el.setAttribute('aria-valuetext', 'Week of ' + fmt(dt(v)));
+  });
+  const wk = trimB - trimA + 1, played = wk - skip.size;
+  const end = Math.min(7 * trimB + 6, todayIdx);
+  $('trimInfo').textContent = 'Playing ' + fmt(dt(trimA)) + ' – ' + fmt(new Date(w0 + end * DAY)) + ', ' + new Date(w0 + end * DAY).getUTCFullYear() + ' · ' + played + ' of ' + nW + ' weeks' + (skip.size ? ' · ' + skip.size + ' silent weeks skipped' : '');
+  info();
+}
+function moveTrim(w, c) {
+  c = Math.max(0, Math.min(nW - 1, c));
+  if (w === 'A') trimA = Math.min(c, trimB); else trimB = Math.max(c, trimA);
+  applyTrim();
+}
 function info() {
   let act = 0;
-  for (let r = 0; r < 7; r++) for (let c = 0; c < nW; c++) if (data[r][c]) act++;
+  for (let r = 0; r < 7; r++) for (let c = trimA; c <= trimB; c++) if (data[r][c]) act++;
   const n = steps().length, R = repsBy[mode], sec = Math.round(n * stepDur());
   const len = s => s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s';
-  $('stats').innerHTML = (sample ? 'Sample graph · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + nW + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
+  $('stats').innerHTML = (sample ? 'Sample graph · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + new Set(steps().map(x => x.c)).size + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
   const M = MODES[mode];
   $('mTitle').textContent = M.t;
   $('mDesc').textContent = M.d;
   const auto = mode === 'B' && skB === 'auto';
   const lg = M.lg || (auto ? ['rest','root','third','fifth','octave'] : ['rest'].concat(SCALES[skB].lv.map(nn)));
   $('lg').innerHTML = '<span>Brightness:</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + t + '</span>').join('')
+    + (mode === 'E' ? '<span>Chord bar:</span><span><i style="background:var(--mi)"></i>Am (1–2 active days)</span><span><i style="background:var(--do)"></i>F (3)</span><span><i style="background:var(--du)"></i>C (4)</span><span><i style="background:var(--or)"></i>G (5–7)</span>' : '')
     + (auto ? '<span>Scale bar:</span><span><i style="background:var(--mi)"></i>A minor (1–2 active days)</span><span><i style="background:var(--do)"></i>D dorian (3–4)</span><span><i style="background:var(--du)"></i>C major (5–7)</span>' : '');
   document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
   $('tempoOut').textContent = bpm + ' BPM';
@@ -432,22 +526,35 @@ function initAudio() {
   const comp = ctx.createDynamicsCompressor(); comp.connect(ctx.destination);
   const master = ctx.createGain(); master.gain.value = .8; master.connect(comp);
   bus = ctx.createGain(); bus.connect(master);
+  dry = ctx.createGain(); dry.connect(master);
+  /* gated reverb for the 80s snare: dense short room that stops abruptly */
+  const glen = Math.round(ctx.sampleRate * .3), gir = ctx.createBuffer(2, glen, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = gir.getChannelData(ch); for (let i = 0; i < glen; i++) d[i] = (Math.random() * 2 - 1) * (i < glen * .88 ? 1 - .4 * i / glen : (glen - i) / (glen * .12) * .65); }
+  gateIn = ctx.createGain();
+  const gcv = ctx.createConvolver(), glp = filt('lowpass', 4200), gout = ctx.createGain();
+  gcv.buffer = gir; gout.gain.value = .35;
+  gateIn.connect(gcv); gcv.connect(glp); glp.connect(gout); gout.connect(master);
   const len = ctx.sampleRate * 2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3; }
   const cv = ctx.createConvolver(), wet = ctx.createGain();
   cv.buffer = ir; wet.gain.value = .22;
   bus.connect(cv); cv.connect(wet); wet.connect(master);
+  echoIn = ctx.createGain();
+  echoDl = ctx.createDelay(2);
+  const fb = ctx.createGain(), elp = filt('lowpass', 2500), ewet = ctx.createGain();
+  fb.gain.value = .38; ewet.gain.value = .45;
+  echoIn.connect(echoDl); echoDl.connect(elp); elp.connect(fb); fb.connect(echoDl); elp.connect(ewet); ewet.connect(bus);
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const nd = noiseBuf.getChannelData(0);
   for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
 }
-function env(t, amp, a, dec) {
+function env(t, amp, a, dec, out) {
   const g = ctx.createGain();
   g.gain.value = .0001;
   g.gain.setValueAtTime(.0001, t);
   g.gain.exponentialRampToValueAtTime(amp, t + a);
   g.gain.exponentialRampToValueAtTime(.0001, t + a + dec);
-  g.connect(bus);
+  g.connect(out || bus);
   return g;
 }
 function osc(type, f, t, end) { const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(end); return o; }
@@ -493,6 +600,55 @@ function drone(t, bar, dens) {
   lp.connect(g); g.connect(bus);
   [[38, -4], [38, 4], [45, 0]].forEach(([m, cents]) => { const o = osc('sawtooth', hz(m), t, t + bar + .9); o.detune.value = cents; o.connect(lp); });
 }
+function synBass(t, m, dur) {
+  const lp = filt('lowpass', 1800);
+  lp.Q.value = 5;
+  lp.frequency.setValueAtTime(1800, t);
+  lp.frequency.exponentialRampToValueAtTime(260, t + dur);
+  lp.connect(env(t, .2, .004, dur, dry));
+  osc('sawtooth', hz(m), t, t + dur + .05).connect(lp);
+}
+function pad(t, bar, notes) {
+  const g = ctx.createGain(), lp = filt('lowpass', 1400);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(.045, t + .5);
+  g.gain.setValueAtTime(.045, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + .7);
+  lp.connect(g); g.connect(bus);
+  notes.forEach(m => [-9, 9].forEach(cents => { const o = osc('sawtooth', hz(m), t, t + bar + .8); o.detune.value = cents; o.connect(lp); }));
+}
+function lead(t, m, amp) {
+  const g = ctx.createGain(), lp = filt('lowpass', 3400);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(amp, t + .01);
+  g.gain.exponentialRampToValueAtTime(.0001, t + .45);
+  lp.connect(g); g.connect(bus); g.connect(echoIn);
+  [['square', 0], ['sawtooth', 8]].forEach(([ty, d]) => { const o = osc(ty, hz(m), t, t + .5); o.detune.value = d; o.connect(lp); });
+}
+/* 80s snare: tuned drum body + short filtered noise, sent to the gated room (no long hiss) */
+function snare80(t, amp) {
+  const body = ctx.createGain();
+  body.connect(dry); body.connect(gateIn);
+  [[185, 1], [330, .5]].forEach(([f, a]) => {
+    const o = osc('triangle', f * 1.4, t, t + .2);
+    o.frequency.exponentialRampToValueAtTime(f, t + .03);
+    o.connect(env(t, amp * a * .7, .002, .12, body));
+  });
+  const hp = filt('highpass', 1800), bp = filt('bandpass', 4500);
+  bp.Q.value = .7;
+  noise(t, t + .2).connect(hp); hp.connect(bp);
+  bp.connect(env(t, amp * .4, .002, .13, body));
+}
+/* 808-style closed hat: six detuned square waves instead of white noise */
+function hat80(t, amp) {
+  const bp = filt('bandpass', 10000), hp = filt('highpass', 7000);
+  bp.Q.value = 1.2;
+  [205.3, 304.4, 369.6, 522.7, 540, 800].forEach(f => osc('square', f, t, t + .06).connect(bp));
+  bp.connect(hp);
+  hp.connect(env(t, amp, .001, .04, dry));
+}
 function deep(t) {
   if (!thump.vol) return;
   const f = hz(thump.m), lp = filt('lowpass', 320), L = thump.len;
@@ -515,6 +671,17 @@ function drum(k, t, amp) {
   else { const f = filt('highpass', 5000); noise(t, t + .18).connect(f); f.connect(env(t, amp * .4, .02, .12)); }
 }
 function sched(s, t) {
+  if (mode === 'E') {
+    const l = s.r < 7 ? data[s.r][s.c] : 0, ch = CH[chordKey(s.c)];
+    if (s.r === 0) pad(t, stepDur() * 8, ch.pad);
+    if (s.r === 0 || s.r === 4) drum('kick', t, .75);
+    if (s.r === 2 || s.r === 6) snare80(t, .55);
+    if (s.r === 7 && density(s.c) >= 3) { drum('tomH', t, .3); drum('tomL', t + stepDur() / 2, .3); }
+    hat80(t, s.r % 2 ? .05 : .08);
+    synBass(t, ch.root + (s.r % 2 ? 12 : 0), stepDur() * .9);
+    if (l) lead(t, ch.lead[l - 1], .07 + .025 * l);
+    return;
+  }
   if (mode === 'D') {
     const l = data[s.r][s.c];
     if (s.r === 0) { drone(t, stepDur() * 7, density(s.c)); tromm(t, .55, true); }
@@ -570,7 +737,13 @@ function show(q) {
   unlight();
   const s = q.s;
   follow(s.c);
-  if (mode === 'D') {
+  if (mode === 'E') {
+    const k = chordKey(s.c), l = s.r < 7 ? data[s.r][s.c] : 0;
+    if (s.r < 7) { light(cellAt[s.r][s.c], l > 0); mark(s.r); }
+    light($('sc' + s.c), false);
+    $('now').textContent = s.r === 7 ? 'fill · ' + k : l ? nn(CH[k].lead[l - 1]) + ' over ' + k : k;
+    $('nowSub').textContent = (s.r < 7 ? DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4' : 'Week of ' + fmt(dt(s.c)) + ' · drum fill') + ' · beat ' + (s.r + 1) + ' of 8 · chord ' + k + ' (' + density(s.c) + ' active days)';
+  } else if (mode === 'D') {
     const l = data[s.r][s.c], dr = s.r === 0 || s.r === 3 || l >= 3;
     light(cellAt[s.r][s.c], l > 0); mark(s.r);
     $('now').textContent = l ? nn(D_LV[l - 1]) + (dr ? ' + drum' : '') : (dr ? 'drum' : 'rest');
@@ -612,6 +785,7 @@ function start() {
   idx = 0; ring = 0; queue = []; endAt = Infinity; lastCol = -1;
   nextT = ctx.currentTime + .08;
   clearInterval(timer);
+  if (echoDl) echoDl.delayTime.value = Math.min(1.9, stepDur() * 1.5);
   timer = setInterval(tick, 25);
   tick();
   cancelAnimationFrame(raf);
@@ -638,6 +812,40 @@ $('userForm').addEventListener('submit', e => {
 });
 $('user').addEventListener('input', () => { if ($('userForm').classList.contains('invalid') || !$('okMark').hidden) setField('idle'); });
 window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
+const colFromX = x => { const r = $('trim').getBoundingClientRect(); return Math.floor((x - r.left) / r.width * nW); };
+grid.addEventListener('pointerdown', e => {
+  const tr = e.target.closest('.trim');
+  if (!tr) return;
+  e.preventDefault();
+  const th = e.target.closest('.th'), c = colFromX(e.clientX);
+  dragging = th ? (th.id === 'thA' ? 'A' : 'B') : (Math.abs(c - trimA) <= Math.abs(c - trimB) ? 'A' : 'B');
+  if (!th) moveTrim(dragging, c);
+  (th || tr).focus?.();
+  tr.setPointerCapture(e.pointerId);
+});
+grid.addEventListener('pointermove', e => { if (dragging) moveTrim(dragging, colFromX(e.clientX)); });
+const endDrag = () => { if (dragging) { dragging = null; restartIfPlaying(); } };
+grid.addEventListener('pointerup', endDrag);
+grid.addEventListener('pointercancel', endDrag);
+grid.addEventListener('keydown', e => {
+  const th = e.target.closest('.th');
+  if (!th) return;
+  const w = th.id === 'thA' ? 'A' : 'B', k = e.key;
+  let v = w === 'A' ? trimA : trimB;
+  if (k === 'ArrowLeft' || k === 'ArrowDown') v--; else if (k === 'ArrowRight' || k === 'ArrowUp') v++;
+  else if (k === 'PageDown') v -= 4; else if (k === 'PageUp') v += 4;
+  else if (k === 'Home') v = 0; else if (k === 'End') v = nW - 1; else return;
+  e.preventDefault();
+  moveTrim(w, v);
+});
+$('shorten').addEventListener('change', e => { shorten = e.target.checked; applyTrim(); restartIfPlaying(); });
+$('trimReset').addEventListener('click', () => { trimA = 0; trimB = nW - 1; applyTrim(); restartIfPlaying(); });
+$('trimFit').addEventListener('click', () => {
+  let a = -1, b = -1;
+  for (let c = 0; c < nW; c++) if (density(c)) { if (a < 0) a = c; b = c; }
+  if (a < 0) return;
+  trimA = a; trimB = b; applyTrim(); restartIfPlaying();
+});
 grid.addEventListener('click', e => {
   const el = e.target.closest('.cell');
   if (!el || el.classList.contains('fut')) return;
