@@ -118,9 +118,9 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 .th::after{content:"";position:absolute;left:10px;top:7px;width:8px;height:30px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
 .cell.out,.sc.out{opacity:.2}
 .cell.gap,.sc.gap{opacity:.45}
-.trimbar{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;justify-content:center;margin-top:12px;font-size:14px;text-align:center}
-.trimbar p{margin:0;font-weight:600;flex:1 1 100%}
-.hint{text-align:center}
+.trimbar{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;text-align:center}
+.trimbar p{margin:0 0 4px;font-size:16px;font-weight:600;flex:1 1 100%}
+.hint{text-align:center;margin:8px 0 0}
 .trimbar label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
 .trimbar input{width:20px;height:20px;accent-color:var(--go)}
 .row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
@@ -212,8 +212,8 @@ dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
         <div class="seg" id="reps" role="group" aria-label="How many times to play">
           <button type="button" data-r="1">Once</button><button type="button" data-r="3">3 times</button><button type="button" data-r="0">Loop</button>
         </div>
-        <div class="tempo"><label for="tempo">Tempo <output id="tempoOut"></output></label><input type="range" id="tempo" min="60" max="180" step="1" value="110"></div>
         <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
+        <div class="tempo"><label for="tempo">Tempo <output id="tempoOut"></output></label><input type="range" id="tempo" min="60" max="180" step="1" value="110"></div>
       </div>
     </div>
     <div class="scroll" id="scroller"><div id="grid"></div></div>
@@ -584,7 +584,8 @@ function applyTrim() {
   let fa = -1, fb = -1;
   for (let c = 0; c < nW; c++) if (density(c)) { if (fa < 0) fa = c; fb = c; }
   $('fitAct').checked = fa >= 0 && trimA === fa && trimB === fb;
-  $('trimInfo').textContent = 'Playing ' + fmt(dt(trimA)) + ' – ' + fmt(new Date(w0 + end * DAY)) + ', ' + new Date(w0 + end * DAY).getUTCFullYear() + ' · ' + played + ' of ' + nW + ' weeks' + (skip.size ? ' · ' + skip.size + ' silent weeks skipped' : '');
+  const d1 = dt(trimA), d2 = new Date(w0 + end * DAY), y1 = d1.getUTCFullYear(), y2 = d2.getUTCFullYear();
+  $('trimInfo').textContent = 'Playing ' + fmt(d1) + (y1 !== y2 ? ', ' + y1 : '') + ' – ' + fmt(d2) + ', ' + y2 + ' · ' + played + ' of ' + nW + ' weeks' + (skip.size ? ' · ' + skip.size + ' silent weeks skipped' : '');
   info();
 }
 function moveTrim(w, c) {
