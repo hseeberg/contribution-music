@@ -103,7 +103,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 .map{font-size:13px;color:var(--mute);padding-left:8px;white-space:nowrap}
 .map.on{color:var(--hot);font-weight:700}
 .cell{display:block;width:100%;aspect-ratio:1;border:0;padding:0;border-radius:22%;background:var(--c0);cursor:pointer;transition:transform .08s,box-shadow .08s}
-.cell:hover{box-shadow:0 0 0 2px var(--mute)}
 .l1{background:var(--c1)}.l2{background:var(--c2)}.l3{background:var(--c3)}.l4{background:var(--c4)}
 .fut{visibility:hidden}
 .cell.pc{box-shadow:0 0 0 2px var(--hot)}
@@ -124,9 +123,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 .hint{text-align:center}
 .trimbar label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
 .trimbar input{width:20px;height:20px;accent-color:var(--go)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin-top:16px;font-size:14px;color:var(--mute)}
-.lgbr{flex-basis:100%;height:0}
-.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
 .row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
 .pos{margin:0;font-size:14px;color:var(--mute)}
 .big{margin:4px 0 2px;font-size:clamp(28px,4.4vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;min-height:1.1em;overflow-wrap:anywhere}
@@ -149,6 +145,18 @@ select:disabled{opacity:.6}
 .ghost:hover{border-color:var(--mute)}
 .note{font-size:14px;color:var(--mute);margin:0 auto;padding-top:16px;text-align:center;max-width:70ch}
 .readout{text-align:center}
+.row.solo{grid-template-columns:minmax(0,1fr)}
+.panel[hidden]{display:none}
+.cell{cursor:default}
+.readout .how{border-top:0;padding-top:0;margin-top:0}
+.readout p{max-width:70ch;margin-inline:auto}
+.tempo{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 18px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.tempo label{font-size:14px;color:var(--mute);white-space:nowrap;margin:0}
+.tempo output{display:inline-block;min-width:4.8em;text-align:left;color:var(--ink);font-weight:600}
+.tempo input[type=range]{width:140px;height:32px}
+.spansel{display:inline-block;width:auto}
+.spansel select{width:auto;min-height:48px;font-size:15px;border-radius:999px;padding-left:18px}
+.ghost[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .linkbtn{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:24px}
 dialog#privacy{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:min(86vh,900px)}
 dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
@@ -204,43 +212,28 @@ dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
         <div class="seg" id="reps" role="group" aria-label="How many times to play">
           <button type="button" data-r="1">Once</button><button type="button" data-r="3">3 times</button><button type="button" data-r="0">Loop</button>
         </div>
+        <div class="tempo"><label for="tempo">Tempo <output id="tempoOut"></output></label><input type="range" id="tempo" min="60" max="180" step="1" value="110"></div>
         <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
       </div>
     </div>
     <div class="scroll" id="scroller"><div id="grid"></div></div>
+    <p class="pos hint">Drag the two handles under the graph to choose which weeks play.</p>
     <div class="trimbar">
       <p id="trimInfo"></p>
+      <span class="sel spansel"><label class="sr" for="span">Time range</label><select id="span"><option value="all">Since first contribution</option><option value="last">Last 12 months</option></select></span>
       <label><input type="checkbox" id="shorten" checked> Skip long silences</label>
-      <button class="ghost" id="trimFit" type="button">Fit to activity</button>
-      <button class="ghost" id="trimReset" type="button">Play everything</button>
+      <label><input type="checkbox" id="fitAct" checked> Trim empty start and end</label>
     </div>
-    <p class="pos hint">Drag the two handles under the graph to choose which weeks play.</p>
-    <div class="legend" id="lg"></div>
   </section>
 
-  <section class="row">
+  <section class="row" id="lowRow">
     <div class="panel readout">
-      <p class="pos" id="pos">Ready</p>
-      <p class="big" id="now">Press Play</p>
-      <p class="sub" id="nowSub">The pink frame shows which square is playing.</p>
       <div class="how">
         <h2 id="mTitle"></h2>
         <p id="mDesc"></p>
       </div>
     </div>
-    <div class="panel ctl">
-      <div>
-        <label for="span">Time range</label>
-        <span class="sel"><select id="span"><option value="all">Since first contribution</option><option value="last">Last 12 months</option></select></span>
-      </div>
-      <div>
-        <label for="tempo">Tempo <output id="tempoOut"></output></label>
-        <input type="range" id="tempo" min="60" max="180" step="1" value="110">
-      </div>
-      <div>
-        <label for="scale">Scale</label>
-        <span class="sel"><select id="scale"></select></span>
-      </div>
+    <div class="panel ctl" id="ctlPanel">
       <fieldset class="thump" id="thump">
         <legend>Sunday thump</legend>
         <div class="two">
@@ -251,11 +244,6 @@ dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
         </div>
         <button class="ghost" id="tTry" type="button">Play one thump</button>
       </fieldset>
-      <div class="btns">
-        <button class="ghost" id="reset" type="button">Undo my changes</button>
-        <button class="ghost" id="clear" type="button">Clear all squares</button>
-      </div>
-      <p class="pos">Try your own pattern: click a square to make it brighter. After the brightest step it turns empty again.</p>
     </div>
   </section>
   <p class="note"><button class="linkbtn" id="privacyOpen" type="button">Privacy</button> · <a href="https://github.com/hseeberg/contribution-music">Project on GitHub</a> · No sound on iPhone? Turn off silent mode. Contribution data comes from the unofficial <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> and updates every hour. All sound is made in your browser.</p>
@@ -357,7 +345,6 @@ const BAR8 = m => 'EFGHJ'.includes(m);
 const progIdx = n => n <= 2 ? 0 : n === 3 ? 1 : n === 4 ? 2 : 3;
 function chordAt(c) {
   let i = 0; for (let k = c; k >= 0; k--) { const n = density(k); if (n) { i = progIdx(n); break; } } return {i, name: PROG[mode][i][0], ch: PROG[mode][i][1]}; }
-const CHORD_TXT = ['1–2 active days', '3', '4', '5–7'];
 const CHORD_COL = ['--mi', '--do', '--du', '--or'];
 const MODES = {
   A: {t: 'Chords · read left to right', d: 'Each column is one beat. Each row is a pitch: Sunday is highest, Saturday lowest. Brighter squares play louder and longer. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
@@ -407,6 +394,7 @@ function build(list) {
   data = Array.from({length: 7}, (_, r) => Array.from({length: nW}, (_, c) => lvl.get(w0 + (7 * c + r) * DAY) || 0));
   orig = data.map(r => r.slice());
   trimA = 0; trimB = nW - 1;
+  fitToActivity();
   return first !== null;
 }
 function sampleList() {
@@ -547,7 +535,7 @@ function render() {
     h += '<div class="lab" title="' + DAYS[r] + '">' + DS[r] + '</div>';
     for (let c = 0; c < nW; c++) {
       const f = fut(c, r);
-      h += '<button class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '"' + (f ? ' tabindex="-1" aria-hidden="true"' : '') + ' aria-label="' + DAYS[r] + ' ' + fmt(dt(c, r)) + ', brightness ' + data[r][c] + ' of 4"></button>';
+      h += '<span class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '" title="' + DAYS[r] + ' ' + fmt(dt(c, r)) + '"></span>';
     }
     h += '<div class="map" id="map' + r + '">' + mapLabel(r) + '</div>';
   }
@@ -574,14 +562,7 @@ function render() {
   const sc = $('scroller'); sc.scrollLeft = sc.scrollWidth;
 }
 function fillScale() {
-  const sel = $('scale');
-  sel.disabled = mode === 'D' || BAR8(mode);
   document.querySelectorAll('#reps button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === repsBy[mode]));
-  if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed in Viking)</option>'; return; }
-  if (BAR8(mode)) { sel.innerHTML = '<option>Chords picked automatically</option>'; return; }
-  const opts = (mode === 'B' ? [['auto', 'Auto: follows how busy each week is']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
-  sel.innerHTML = opts.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
-  sel.value = mode === 'B' ? skB : sk;
 }
 function applyTrim() {
   const skip = skipSet(), pct = v => (v / nW * 100) + '%';
@@ -600,6 +581,9 @@ function applyTrim() {
   });
   const wk = trimB - trimA + 1, played = wk - skip.size;
   const end = Math.min(7 * trimB + 6, todayIdx);
+  let fa = -1, fb = -1;
+  for (let c = 0; c < nW; c++) if (density(c)) { if (fa < 0) fa = c; fb = c; }
+  $('fitAct').checked = fa >= 0 && trimA === fa && trimB === fb;
   $('trimInfo').textContent = 'Playing ' + fmt(dt(trimA)) + ' – ' + fmt(new Date(w0 + end * DAY)) + ', ' + new Date(w0 + end * DAY).getUTCFullYear() + ' · ' + played + ' of ' + nW + ' weeks' + (skip.size ? ' · ' + skip.size + ' silent weeks skipped' : '');
   info();
 }
@@ -617,16 +601,12 @@ function info() {
   const M = MODES[mode];
   $('mTitle').textContent = M.t;
   $('mDesc').textContent = M.d;
-  const auto = mode === 'B' && skB === 'auto';
-  const lg = M.lg || (auto ? ['rest','root','third','fifth','octave'] : ['rest'].concat(SCALES[skB].lv.map(nn)));
-  $('lg').innerHTML = '<span>Brightness:</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + t + '</span>').join('')
-    + (BAR8(mode) ? '<span class="lgbr"></span><span>Chord bar:</span>' + PROG[mode].map(([n], i) => '<span><i style="background:var(' + CHORD_COL[i] + ')"></i>' + n + ' (' + CHORD_TXT[i] + ')</span>').join('') : '')
-    + (auto ? '<span class="lgbr"></span><span>Scale bar:</span><span><i style="background:var(--mi)"></i>A minor (1–2 active days)</span><span><i style="background:var(--do)"></i>D dorian (3–4)</span><span><i style="background:var(--du)"></i>C major (5–7)</span>' : '');
   document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
   $('modeSel').value = mode;
   $('tempoOut').textContent = bpmBy[mode] + ' BPM';
   $('tempo').value = bpmBy[mode];
-  $('thump').hidden = mode !== 'B';
+  $('ctlPanel').hidden = mode !== 'B';
+  $('lowRow').classList.toggle('solo', mode !== 'B');
   $('tVolOut').textContent = thump.vol ? thump.vol + ' %' : 'off';
   $('tLenOut').textContent = thump.len.toFixed(1) + ' s';
   $('tSubOut').textContent = thump.sub + ' %';
@@ -1002,30 +982,12 @@ function show(q) {
   unlight();
   const s = q.s;
   follow(s.c);
-  if (BAR8(mode)) {
-    const ca = chordAt(s.c), k = ca.name, l = s.r < 7 ? data[s.r][s.c] : 0;
-    if (s.r < 7) { light(cellAt[s.r][s.c], l > 0); mark(s.r); }
-    light($('sc' + s.c), false);
-    $('now').textContent = s.r === 7 ? 'fill · ' + k : l ? nn(ca.ch.lead[l - 1]) + ' over ' + k : k;
-  } else if (mode === 'D') {
-    const l = data[s.r][s.c], dr = s.r === 0 || s.r === 3 || l >= 3;
-    light(cellAt[s.r][s.c], l > 0); mark(s.r);
-    $('now').textContent = l ? nn(D_LV[l - 1]) + (dr ? ' + drum' : '') : (dr ? 'drum' : 'rest');
-  } else if (mode === 'B') {
-    const l = data[s.r][s.c], sc = scB(s.c);
-    light(cellAt[s.r][s.c], l > 0); light($('sc' + s.c), false); mark(s.r);
-    $('now').textContent = l ? nn(sc.lv[l - 1]) : 'rest';
+  if (BAR8(mode) || mode === 'D' || mode === 'B') {
+    if (s.r < 7) { light(cellAt[s.r][s.c], data[s.r][s.c] > 0); mark(s.r); }
+    if (mode !== 'D') light($('sc' + s.c), false);
   } else {
-    const hits = [], sc = SCALES[sk];
-    for (let r = 0; r < 7; r++) {
-      const l = data[r][s.c];
-      light(cellAt[r][s.c], l > 0);
-      if (l) { hits.push(mode === 'A' ? nn(sc.rows[r]) : DRUMS[r]); mark(r); }
-    }
-    const k = hits.length, w = mode === 'A' ? (k === 1 ? 'note' : 'notes') : (k === 1 ? 'hit' : 'hits');
-    $('now').textContent = k ? hits.join(' · ') : 'silence';
+    for (let r = 0; r < 7; r++) { const l = data[r][s.c]; light(cellAt[r][s.c], l > 0); if (l) mark(r); }
   }
-  $('pos').textContent = 'Round ' + (q.ring + 1) + (q.R ? ' of ' + q.R : '') + ' · step ' + (q.i + 1) + ' of ' + q.n;
 }
 function frame() {
   const now = ctx.currentTime;
@@ -1050,15 +1012,13 @@ function start() {
   timer = setInterval(tick, 25);
   tick();
   cancelAnimationFrame(raf);
-  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); $('nowSub').hidden = true; }
+  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); }
 }
 function stop() {
   clearInterval(timer); timer = null; queue = [];
   cancelAnimationFrame(raf); raf = 0;
   unlight();
   setPlayBtn(false);
-  $('nowSub').hidden = false;
-  $('pos').textContent = 'Stopped';
 }
 const playing = () => raf !== 0;
 function restartIfPlaying() { if (playing()) start(); }
@@ -1102,22 +1062,14 @@ grid.addEventListener('keydown', e => {
   moveTrim(w, v);
 });
 $('shorten').addEventListener('change', e => { shorten = e.target.checked; applyTrim(); restartIfPlaying(); });
-$('trimReset').addEventListener('click', () => { trimA = 0; trimB = nW - 1; applyTrim(); restartIfPlaying(); });
-$('trimFit').addEventListener('click', () => {
+function fitToActivity() {
   let a = -1, b = -1;
   for (let c = 0; c < nW; c++) if (density(c)) { if (a < 0) a = c; b = c; }
-  if (a < 0) return;
-  trimA = a; trimB = b; applyTrim(); restartIfPlaying();
-});
-grid.addEventListener('click', e => {
-  const el = e.target.closest('.cell');
-  if (!el || el.classList.contains('fut')) return;
-  const r = +el.dataset.r, c = +el.dataset.c;
-  data[r][c] = (data[r][c] + 1) % 5;
-  const x = $('scroller').scrollLeft;
-  render();
-  $('scroller').scrollLeft = x;
-  cellAt[r][c]?.focus({preventScroll: true});
+  if (a >= 0) { trimA = a; trimB = b; }
+}
+$('fitAct').addEventListener('change', e => {
+  if (e.target.checked) fitToActivity(); else { trimA = 0; trimB = nW - 1; }
+  applyTrim(); restartIfPlaying();
 });
 $('privacyOpen').addEventListener('click', () => { const d = $('privacy'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
 $('privacy').addEventListener('click', e => { if (e.target === $('privacy')) $('privacy').close(); });
@@ -1127,14 +1079,11 @@ $('modeSel').innerHTML = [...document.querySelectorAll('.mode')].map(el => '<opt
 $('modeSel').addEventListener('change', e => setMode(e.target.value));
 $('play').addEventListener('click', () => { if (playing()) stop(); else start(); });
 $('tempo').addEventListener('input', e => { bpmBy[mode] = +e.target.value; info(); });
-$('scale').addEventListener('change', e => { if (mode === 'B') skB = e.target.value; else if (mode !== 'D') sk = e.target.value; render(); });
 document.querySelectorAll('#reps button').forEach(b => b.addEventListener('click', () => { repsBy[mode] = +b.dataset.r; fillScale(); info(); }));
 $('span').addEventListener('change', e => { span = e.target.value; load(user, !location.hash); });
 $('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
 [['tVol', 'vol'], ['tLen', 'len'], ['tSub', 'sub']].forEach(([id, k]) => $(id).addEventListener('input', e => { thump[k] = +e.target.value; info(); }));
 $('tTry').addEventListener('click', () => { initAudio(); ctx.resume().catch(() => {}); deep(ctx.currentTime + .03); });
-$('reset').addEventListener('click', () => { data = orig.map(r => r.slice()); render(); });
-$('clear').addEventListener('click', () => { data = data.map(r => r.map(() => 0)); render(); });
 
 /* ---------- background ---------- */
 function drawBg() {
