@@ -16,9 +16,11 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="A GitHub contribution graph with a pink playhead, under the title Contribution Music.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-SemiBold.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-ExtraBold.woff2) format("woff2");font-weight:800;font-display:swap}
 /* VOICE everyday toy, precise and calm
    IDEA the GitHub contribution graph behaves like a step sequencer; the page opens with a github.com address bar
    PICTURE the grid itself, large; a pink playhead walks it in the chosen reading order
@@ -32,9 +34,15 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 "Mona Sans",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
 a{color:inherit}
+/* Background: contribution-style squares only at the far left and right, fading out before the content column */
+.bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.5;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 max(2vw,calc(50% - 700px)),transparent max(4vw,calc(50% - 560px)),transparent min(96vw,calc(50% + 560px)),#000 min(98vw,calc(50% + 700px)),#000 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 max(2vw,calc(50% - 700px)),transparent max(4vw,calc(50% - 560px)),transparent min(96vw,calc(50% + 560px)),#000 min(98vw,calc(50% + 700px)),#000 100%)}
+.bgfx rect{rx:4px}
+@media(max-width:720px){.bgfx{display:none}}
 .band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
-.top{padding-bottom:0;display:grid;gap:12px}
-.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;overflow:hidden;margin-top:8px}
+.top{padding-bottom:0;display:grid;gap:12px;justify-items:center;text-align:center}
+.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;width:100%;overflow:hidden;margin-top:8px;text-align:left}
 .addr:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent)}
 .addr.invalid:focus-within{border-color:var(--err);box-shadow:0 0 0 3px color-mix(in srgb,var(--err) 30%,transparent)}
 .addr input{-webkit-appearance:none;appearance:none}
@@ -50,7 +58,7 @@ a{color:inherit}
 .okmark svg{width:18px;height:18px}
 .addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap;min-width:96px}
 .addr.busy button{cursor:progress;opacity:.85}
-.status{display:flex;gap:8px;align-items:flex-start;font-size:14px;min-height:1.6em;max-width:640px;color:var(--ink)}
+.status{display:flex;gap:8px;align-items:flex-start;justify-content:center;font-size:14px;min-height:1.6em;max-width:640px;color:var(--ink);text-align:left}
 .status:empty{display:none}
 .status p{margin:0}
 .status svg{flex:none;width:16px;height:16px;margin-top:3px}
@@ -59,10 +67,9 @@ a{color:inherit}
 .st-ok svg{color:var(--ok)}
 .st-warn svg{color:var(--du)}
 .st-err{color:var(--err)}
-.retry{min-height:32px;padding:2px 12px;margin-left:4px;border:1px solid var(--line);border-radius:6px;background:var(--bg);cursor:pointer;font-size:14px}
 .spin{flex:none;width:14px;height:14px;margin-top:4px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.playwrap{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.playwrap{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
 .seg button{min-height:42px;padding:6px 14px;border:0;border-radius:999px;background:transparent;color:var(--mute);font-weight:600;cursor:pointer;white-space:nowrap}
 .seg button:hover{color:var(--ink)}
@@ -76,8 +83,10 @@ h1{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:
 .stats{margin:0;color:var(--mute);font-size:14px}
 .stats b{color:var(--ink);font-weight:600;white-space:nowrap}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,2.2vw,24px)}
-.bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:18px}
-.modes{display:flex;flex-wrap:wrap;gap:6px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin-bottom:18px}
+.modes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.modesel{display:none;width:100%;max-width:360px}
+.modesel select{min-height:48px;border-radius:999px;padding-left:20px;font-weight:600}
 button,select{font:inherit;color:inherit}
 .mode{min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600}
 .mode span{color:var(--mute);font-weight:400;margin-left:6px}
@@ -87,7 +96,7 @@ button,select{font:inherit;color:inherit}
 .play svg{width:16px;height:16px;fill:currentColor}
 button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .scroll{overflow-x:auto;padding:6px 2px;position:relative}
-#grid{display:grid;grid-template-columns:1.6em repeat(var(--n),minmax(0,1fr)) 7.4em;gap:clamp(2px,.5vw,5px);align-items:center;max-width:1000px}
+#grid{display:grid;grid-template-columns:1.6em repeat(var(--n),minmax(0,1fr)) 7.4em;gap:clamp(2px,.5vw,5px);align-items:center;max-width:1000px;margin:0 auto}
 #grid.wide{grid-template-columns:1.6em repeat(var(--n),14px) 7.4em;gap:3px;max-width:none;width:max-content}
 .hd{font-size:13px;color:var(--mute);white-space:nowrap;overflow:visible;height:20px}
 .lab{font-size:13px;color:var(--mute);font-weight:600}
@@ -110,17 +119,19 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 .th::after{content:"";position:absolute;left:10px;top:7px;width:8px;height:30px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
 .cell.out,.sc.out{opacity:.2}
 .cell.gap,.sc.gap{opacity:.45}
-.trimbar{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:12px;font-size:14px}
-.trimbar p{margin:0;font-weight:600;flex:1 1 16em}
+.trimbar{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;justify-content:center;margin-top:12px;font-size:14px;text-align:center}
+.trimbar p{margin:0;font-weight:600;flex:1 1 100%}
+.hint{text-align:center}
 .trimbar label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
 .trimbar input{width:20px;height:20px;accent-color:var(--go)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:14px;color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;margin-top:16px;font-size:14px;color:var(--mute)}
+.lgbr{flex-basis:100%;height:0}
 .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
 .row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
 .pos{margin:0;font-size:14px;color:var(--mute)}
 .big{margin:4px 0 2px;font-size:clamp(28px,4.4vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;min-height:1.1em;overflow-wrap:anywhere}
-.sub{margin:0 0 18px;color:var(--mute)}
-.how{border-top:1px solid var(--line);padding-top:14px}
+.sub{margin:0;color:var(--mute)}
+.how{border-top:1px solid var(--line);padding-top:14px;margin-top:18px}
 .how h2{font-size:18px;margin:0 0 4px}
 .how p{margin:0}
 .ctl{display:grid;gap:16px;align-content:start}
@@ -136,13 +147,28 @@ select:disabled{opacity:.6}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
 .ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
 .ghost:hover{border-color:var(--mute)}
-.note{font-size:14px;color:var(--mute);margin:0;padding-top:16px}
+.note{font-size:14px;color:var(--mute);margin:0 auto;padding-top:16px;text-align:center;max-width:70ch}
+.readout{text-align:center}
+.linkbtn{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:24px}
+dialog#privacy{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:min(86vh,900px)}
+dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
+.dlg{padding:clamp(20px,3vw,32px);overflow-y:auto;max-height:inherit}
+.dlg h2{font-size:28px;line-height:1.1;margin:0 0 8px;outline:none}
+.dlg .lead{font-size:17px;font-weight:600;margin:0 0 8px}
+.dlg h3{font-size:16px;margin:20px 0 6px}
+.dlg ul{margin:0;padding-left:1.2em}
+.dlg li{margin:4px 0}
+.dlg a{text-underline-offset:2px}
+.dlg .upd{font-size:14px;color:var(--mute);margin:20px 0 16px}
+.dlg form{margin:0;text-align:right}
 @media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
+@media(max-width:600px){.modes{display:none}.modesel{display:block}}
 @media(max-width:420px){.mode{padding:8px 12px}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}.cell{transition:none}.cell.hit{transform:none}}
 </style>
 </head>
 <body>
+<svg class="bgfx" id="bgfx" aria-hidden="true" focusable="false"></svg>
 <header class="band top">
   <div>
     <h1>Contribution Music</h1>
@@ -162,8 +188,13 @@ select:disabled{opacity:.6}
 <main class="band">
   <section class="panel">
     <div class="bar">
+      <span class="sel modesel"><label class="sr" for="modeSel">Style</label><select id="modeSel"></select></span>
       <div class="modes" role="group" aria-label="How to read the graph">
         <button class="mode" data-m="E">80s</button>
+        <button class="mode" data-m="F">90s Techno</button>
+        <button class="mode" data-m="G">Drum &amp; Bass</button>
+        <button class="mode" data-m="H">Hip-hop</button>
+        <button class="mode" data-m="J">Rap</button>
         <button class="mode" data-m="D">Viking</button>
         <button class="mode" data-m="C">Drums</button>
         <button class="mode" data-m="B">Melody</button>
@@ -183,12 +214,12 @@ select:disabled{opacity:.6}
       <button class="ghost" id="trimFit" type="button">Fit to activity</button>
       <button class="ghost" id="trimReset" type="button">Play everything</button>
     </div>
-    <p class="pos">Drag the two handles under the graph to choose which weeks play.</p>
+    <p class="pos hint">Drag the two handles under the graph to choose which weeks play.</p>
     <div class="legend" id="lg"></div>
   </section>
 
   <section class="row">
-    <div class="panel">
+    <div class="panel readout">
       <p class="pos" id="pos">Ready</p>
       <p class="big" id="now">Press Play</p>
       <p class="sub" id="nowSub">The pink frame shows which square is playing.</p>
@@ -227,8 +258,47 @@ select:disabled{opacity:.6}
       <p class="pos">Try your own pattern: click a square to make it brighter. After the brightest step it turns empty again.</p>
     </div>
   </section>
-  <p class="note">No sound on iPhone? Turn off silent mode. Contribution data comes from the unofficial <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> and updates every hour. All sound is made in your browser.</p>
+  <p class="note"><button class="linkbtn" id="privacyOpen" type="button">Privacy</button> · <a href="https://github.com/hseeberg/contribution-music">Project on GitHub</a> · No sound on iPhone? Turn off silent mode. Contribution data comes from the unofficial <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> and updates every hour. All sound is made in your browser.</p>
 </main>
+
+<dialog id="privacy" aria-labelledby="privacyTitle">
+  <div class="dlg">
+    <h2 id="privacyTitle" tabindex="-1" autofocus>Privacy</h2>
+    <p class="lead">This page does not collect, keep or sell your data.</p>
+    <h3>When you load a graph</h3>
+    <ul>
+      <li>You type a GitHub username. The page sends this username to <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a>.</li>
+      <li>This service is not part of this page. Another person operates it. It reads public contribution data from GitHub.</li>
+      <li>The service sends back the number of contributions for each day. The page uses these numbers only to show the graph and to make sound.</li>
+      <li>The page does not keep the username or the numbers. When you close the page, they are gone.</li>
+    </ul>
+    <h3>What the page does not do</h3>
+    <ul>
+      <li>It does not use cookies.</li>
+      <li>It does not use analytics or tracking.</li>
+      <li>It does not save data on your device.</li>
+      <li>It sends the username only to the contribution service. It sends no other data.</li>
+      <li>It does not use your microphone or camera.</li>
+    </ul>
+    <h3>Sound</h3>
+    <ul><li>Your browser makes all sound on your device. No audio leaves your device.</li></ul>
+    <h3>Services that you connect to</h3>
+    <ul>
+      <li>GitHub Pages hosts this page. GitHub can record your IP address when the page loads. Read the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</li>
+      <li>The contribution service can record your IP address and the username that you type. We do not control this service.</li>
+      <li>All fonts and files load from this website. The page does not load files from other websites.</li>
+    </ul>
+    <h3>Good to know</h3>
+    <ul>
+      <li>The page shows public contributions only. Private contributions show only if the account owner turns them on in GitHub.</li>
+      <li>A link such as <code>…/#octocat</code> keeps the username in your browser history. Your browser does not send this part of the link to a server.</li>
+    </ul>
+    <h3>Questions</h3>
+    <ul><li>Open an issue at <a href="https://github.com/hseeberg/contribution-music/issues">github.com/hseeberg/contribution-music</a>.</li></ul>
+    <p class="upd">Last update: 26 November 2026</p>
+    <form method="dialog"><button class="ghost" id="privacyClose">Close</button></form>
+  </div>
+</dialog>
 
 <script>
 {
@@ -271,10 +341,32 @@ const CH = {
   G: {root: 43, pad: [55, 59, 62], lead: [67, 71, 74, 79]}
 };
 const chordOf = n => n <= 2 ? 'Am' : n === 3 ? 'F' : n === 4 ? 'C' : 'G';
+/* Chord styles: week density (1–2 / 3 / 4 / 5–7 active days) picks one of four chords */
+const PROG = {
+  E: [['Am', CH.Am], ['F', CH.F], ['C', CH.C], ['G', CH.G]],
+  F: [['Am', {root: 45, pad: [57, 60, 64], lead: [69, 72, 76, 81]}], ['Dm', {root: 38, pad: [57, 62, 65], lead: [62, 65, 69, 74]}],
+      ['F', {root: 41, pad: [57, 60, 65], lead: [65, 69, 72, 77]}], ['G', {root: 43, pad: [55, 59, 62], lead: [67, 71, 74, 79]}]],
+  G: [['Am7', {root: 33, pad: [57, 60, 64, 67], lead: [69, 72, 76, 79]}], ['Dm7', {root: 38, pad: [57, 60, 62, 65], lead: [62, 65, 69, 72]}],
+      ['Fmaj7', {root: 41, pad: [57, 60, 64, 65], lead: [65, 69, 72, 76]}], ['Em7', {root: 40, pad: [55, 59, 62, 64], lead: [64, 67, 71, 74]}]]
+};
+PROG.H = [['Am9', {root: 33, pad: [55, 60, 64, 71], lead: [69, 72, 76, 79]}], ['Dm9', {root: 38, pad: [53, 57, 60, 64], lead: [65, 69, 72, 76]}],
+          ['Fmaj7', {root: 41, pad: [52, 57, 60, 64], lead: [64, 69, 72, 76]}], ['E7', {root: 40, pad: [56, 62, 67], lead: [64, 68, 71, 74]}]];
+PROG.J = [['Am', {root: 33, pad: [57, 60, 64], lead: [69, 72, 76, 81]}], ['F', {root: 29, pad: [53, 57, 60], lead: [65, 69, 72, 77]}],
+          ['Dm', {root: 38, pad: [53, 57, 62], lead: [62, 65, 69, 74]}], ['E', {root: 40, pad: [56, 59, 64], lead: [64, 68, 71, 76]}]];
+const BAR8 = m => 'EFGHJ'.includes(m);
+const progIdx = n => n <= 2 ? 0 : n === 3 ? 1 : n === 4 ? 2 : 3;
+function chordAt(c) {
+  let i = 0; for (let k = c; k >= 0; k--) { const n = density(k); if (n) { i = progIdx(n); break; } } return {i, name: PROG[mode][i][0], ch: PROG[mode][i][1]}; }
+const CHORD_TXT = ['1–2 active days', '3', '4', '5–7'];
+const CHORD_COL = ['--mi', '--do', '--du', '--or'];
 const MODES = {
   A: {t: 'Chords · read left to right', d: 'Each column is one beat. Each row is a pitch: Sunday is highest, Saturday lowest. Brighter squares play louder and longer. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
   B: {t: 'Melody · read top to bottom', d: 'Each week is one bar of 7 beats, Sunday first. Brighter squares play higher notes, empty days are rests, and a low thump marks every Sunday. The scale follows how busy the week is: 1–2 active days play A minor, 3–4 play D dorian, 5–7 play C major. The three scales share the same notes, so the changes sound like chords moving: Am, Dm, C.', mul: .5, lg: null},
   C: {t: 'Drums · read left to right', d: 'Each row is one drum and each column one step. Brighter squares hit harder.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
+  F: {t: '90s techno · read top to bottom', d: 'Each week is one bar in 4/4: seven days plus a drum fill. A kick on every beat, offbeat bass and open hi-hats, as in 90s eurodance. How busy the week is picks the chord: 1–2 active days play Am, 3 play Dm, 4 play F, 5–7 play G. Brighter days play higher supersaw stabs.', mul: .5, lg: ['rest','root','third','fifth','octave']},
+  G: {t: 'Drum & Bass · read top to bottom', d: 'Each week is one bar of a fast breakbeat: seven days plus a fill. Two-step kick and snare, 16th-note hi-hats and a deep sub bass. How busy the week is picks the chord: 1–2 active days play Am7, 3 play Dm7, 4 play Fmaj7, 5–7 play Em7. Brighter days play higher electric piano notes. The sub bass needs headphones or good speakers.', mul: .5, lg: ['rest','root','third','fifth','seventh']},
+  H: {t: 'Hip-hop · read top to bottom', d: 'Each week is one bar of a laid-back boom bap beat: seven days plus a fill. Dusty kick and snare, swung hi-hats and a round bass. How busy the week is picks the chord: 1–2 active days play Am9, 3 play Dm9, 4 play Fmaj7, 5–7 play E7. Brighter days play higher vibraphone notes.', mul: .5, swing: .18, lg: ['rest','root','third','fifth','top note']},
+  J: {t: 'Rap · read top to bottom', d: 'Each week is one bar of a half-time trap beat: seven days plus a fill. A kick and a heavy 808 bass, a clap on beat 3 and fast hi-hats that roll on the brightest days. How busy the week is picks the chord: 1–2 active days play Am, 3 play F, 4 play Dm, 5–7 play E. Brighter days play higher bell notes. The 808 needs headphones or good speakers.', mul: .5, lg: ['rest','root','third','fifth','octave']},
   E: {t: '80s · read top to bottom', d: 'Each week is one bar in 4/4: seven days plus a drum fill. A drum machine with a big gated snare keeps the beat, and the bass pulses on every step. How busy the week is picks the chord: 1–2 active days play Am, 3 play F, 4 play C, 5–7 play G. Brighter days play higher notes on the lead synth, with echo.', mul: .5, lg: ['rest','root','third','fifth','octave']},
   D: {t: 'Viking · read top to bottom', d: 'Read like Melody: each week is one bar of 7 beats, felt as 3 + 4. A frame drum hits beats 1 and 4, and the two brightest levels add a hit. A lyre plays each day as a note in D minor pentatonic. A low drone hums underneath and grows louder in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
 };
@@ -282,11 +374,12 @@ const MODES = {
 const $ = id => document.getElementById(id);
 const grid = $('grid');
 let data = [], orig = [], w0 = 0, nW = 0, todayIdx = 0, total = null, sample = false;
-let mode = 'E', bpm = 110, sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
-const repsBy = {A: 0, B: 3, C: 0, D: 3, E: 3};
+let mode = 'E', sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
+const repsBy = {A: 0, B: 3, C: 0, D: 3, E: 3, F: 3, G: 3, H: 3, J: 3};
+const bpmBy = {A: 110, B: 110, C: 110, D: 110, E: 110, F: 140, G: 174, H: 88, J: 140};
 const thump = {m: 36, vol: 60, len: 1.4, sub: 60};
-let cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1, trimA = 0, trimB = 0, shorten = true, dragging = null;
-let ctx, bus, dry, gateIn, noiseBuf, echoIn, echoDl, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
+let retryTarget = null, cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1, trimA = 0, trimB = 0, shorten = true, dragging = null;
+let ctx, bus, dry, tube, gateIn, noiseBuf, echoIn, echoDl, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
 
 /* ---------- dates & data ---------- */
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
@@ -355,7 +448,8 @@ function setField(state) {
   f.classList.toggle('busy', state === 'busy');
   if (state === 'invalid') inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
   $('okMark').hidden = state !== 'ok';
-  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : 'Load graph';
+  f.classList.toggle('is-retry', state === 'retry');
+  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : state === 'retry' ? 'Try again' : 'Load graph';
   $('loadBtn').disabled = state === 'busy';
 }
 function fail(kind, u, demo) {
@@ -366,7 +460,9 @@ function fail(kind, u, demo) {
     $('user').focus();
   } else {
     setField('idle');
-    setStatus('warn', ['We can’t reach the contribution data right now. Your username is probably fine. ' + (loaded ? 'The last graph stays on screen.' : 'Here is a sample graph in the meantime.'), {retry: u, demo}]);
+    retryTarget = {u, demo};
+    setField('retry');
+    setStatus('warn', ['We can’t reach the contribution data right now. Your username is probably fine. Select Try again in a moment. ' + (loaded ? 'The last graph stays on screen.' : 'Here is a sample graph in the meantime.')]);
   }
 }
 async function load(u, demo) {
@@ -394,7 +490,7 @@ async function load(u, demo) {
 }
 
 /* ---------- view ---------- */
-const stepDur = () => 60 / bpm * MODES[mode].mul;
+const stepDur = () => 60 / bpmBy[mode] * MODES[mode].mul;
 const density = c => { let n = 0; for (let r = 0; r < 7; r++) if (data[r][c]) n++; return n; };
 function autoKey(c) {
   for (let k = c; k >= 0; k--) { const n = density(k); if (n) return n <= 2 ? 'pm' : n <= 4 ? 'dor' : 'pd'; }
@@ -417,7 +513,7 @@ function steps() {
   for (let c = trimA; c <= trimB; c++) {
     if (skip.has(c)) continue;
     if (mode === 'B' || mode === 'D') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); }
-    else if (mode === 'E') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); if (!fut(c, 6)) s.push({c, r: 7}); }
+    else if (BAR8(mode)) { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); if (!fut(c, 6)) s.push({c, r: 7}); }
     else s.push({c});
   }
   return s;
@@ -427,6 +523,10 @@ function mapLabel(r) {
   if (mode === 'B') return 'beat ' + (r + 1);
   if (mode === 'D') return 'beat ' + (r + 1) + (r === 0 || r === 3 ? ' · drum' : '');
   if (mode === 'E') return 'beat ' + (r + 1) + (r === 0 || r === 4 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'F') return 'beat ' + (r + 1) + (r === 2 || r === 6 ? ' · kick + clap' : r % 2 ? ' · bass' : ' · kick');
+  if (mode === 'G') return 'beat ' + (r + 1) + (r === 0 || r === 5 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'H') return 'beat ' + (r + 1) + (r === 0 || r === 3 || r === 5 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'J') return 'beat ' + (r + 1) + (r === 0 || r === 5 ? ' · kick + 808' : r === 3 ? ' · 808' : r === 4 ? ' · clap' : '');
   return DRUMS[r];
 }
 function render() {
@@ -440,7 +540,7 @@ function render() {
   const firstLab = Math.min(...lab);
   for (let c = 0; c < nW; c++) {
     const d = dt(c);
-    h += '<div class="hd">' + (lab.has(c) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === firstLab ? ' ' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
+    h += '<div class="hd">' + (lab.has(c) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === firstLab ? ' ’' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
   }
   h += '<div class="hd"></div>';
   for (let r = 0; r < 7; r++) {
@@ -456,9 +556,9 @@ function render() {
     for (let c = 0; c < nW; c++) { const k = keyB(c); h += '<div class="sc s-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + SCALES[k].s + '"></div>'; }
     h += '<div class="map">scale</div>';
   }
-  if (mode === 'E') {
+  if (BAR8(mode)) {
     h += '<div class="lab"></div>';
-    for (let c = 0; c < nW; c++) { const k = chordKey(c); h += '<div class="sc c-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + k + '"></div>'; }
+    for (let c = 0; c < nW; c++) { const k = chordAt(c); h += '<div class="sc" style="background:var(' + CHORD_COL[k.i] + ')" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + k.name + '"></div>'; }
     h += '<div class="map">chord</div>';
   }
   h += '<div class="lab"></div><div class="trim" id="trim" style="grid-column:2 / span ' + nW + '"><div class="tsel" id="tsel"></div>'
@@ -475,10 +575,10 @@ function render() {
 }
 function fillScale() {
   const sel = $('scale');
-  sel.disabled = mode === 'D' || mode === 'E';
+  sel.disabled = mode === 'D' || BAR8(mode);
   document.querySelectorAll('#reps button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === repsBy[mode]));
   if (mode === 'D') { sel.innerHTML = '<option>D minor pentatonic (fixed in Viking)</option>'; return; }
-  if (mode === 'E') { sel.innerHTML = '<option>Chords picked automatically (80s)</option>'; return; }
+  if (BAR8(mode)) { sel.innerHTML = '<option>Chords picked automatically</option>'; return; }
   const opts = (mode === 'B' ? [['auto', 'Auto: follows how busy each week is']] : []).concat(Object.entries(SCALES).map(([k, v]) => [k, v.name]));
   sel.innerHTML = opts.map(([k, n]) => '<option value="' + k + '">' + n + '</option>').join('');
   sel.value = mode === 'B' ? skB : sk;
@@ -520,10 +620,12 @@ function info() {
   const auto = mode === 'B' && skB === 'auto';
   const lg = M.lg || (auto ? ['rest','root','third','fifth','octave'] : ['rest'].concat(SCALES[skB].lv.map(nn)));
   $('lg').innerHTML = '<span>Brightness:</span>' + lg.map((t, i) => '<span><i style="background:var(--c' + i + ')"></i>' + t + '</span>').join('')
-    + (mode === 'E' ? '<span>Chord bar:</span><span><i style="background:var(--mi)"></i>Am (1–2 active days)</span><span><i style="background:var(--do)"></i>F (3)</span><span><i style="background:var(--du)"></i>C (4)</span><span><i style="background:var(--or)"></i>G (5–7)</span>' : '')
-    + (auto ? '<span>Scale bar:</span><span><i style="background:var(--mi)"></i>A minor (1–2 active days)</span><span><i style="background:var(--do)"></i>D dorian (3–4)</span><span><i style="background:var(--du)"></i>C major (5–7)</span>' : '');
+    + (BAR8(mode) ? '<span class="lgbr"></span><span>Chord bar:</span>' + PROG[mode].map(([n], i) => '<span><i style="background:var(' + CHORD_COL[i] + ')"></i>' + n + ' (' + CHORD_TXT[i] + ')</span>').join('') : '')
+    + (auto ? '<span class="lgbr"></span><span>Scale bar:</span><span><i style="background:var(--mi)"></i>A minor (1–2 active days)</span><span><i style="background:var(--do)"></i>D dorian (3–4)</span><span><i style="background:var(--du)"></i>C major (5–7)</span>' : '');
   document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
-  $('tempoOut').textContent = bpm + ' BPM';
+  $('modeSel').value = mode;
+  $('tempoOut').textContent = bpmBy[mode] + ' BPM';
+  $('tempo').value = bpmBy[mode];
   $('thump').hidden = mode !== 'B';
   $('tVolOut').textContent = thump.vol ? thump.vol + ' %' : 'off';
   $('tLenOut').textContent = thump.len.toFixed(1) + ' s';
@@ -538,6 +640,11 @@ function initAudio() {
   const master = ctx.createGain(); master.gain.value = .8; master.connect(comp);
   bus = ctx.createGain(); bus.connect(master);
   dry = ctx.createGain(); dry.connect(master);
+  /* saturation that makes the 808 bass audible on small speakers */
+  tube = ctx.createWaveShaper();
+  const tc = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) { const x = i / 1023 * 2 - 1; tc[i] = Math.tanh(2.5 * x) / Math.tanh(2.5); }
+  tube.curve = tc; tube.connect(dry);
   /* gated reverb for the 80s snare: dense short room that stops abruptly */
   const glen = Math.round(ctx.sampleRate * .3), gir = ctx.createBuffer(2, glen, ctx.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const d = gir.getChannelData(ch); for (let i = 0; i < glen; i++) d[i] = (Math.random() * 2 - 1) * (i < glen * .88 ? 1 - .4 * i / glen : (glen - i) / (glen * .12) * .65); }
@@ -660,6 +767,148 @@ function hat80(t, amp) {
   bp.connect(hp);
   hp.connect(env(t, amp, .001, .04, dry));
 }
+/* ---------- 90s techno ---------- */
+function kickHard(t, amp) {
+  const o = osc('sine', 170, t, t + .4);
+  o.frequency.exponentialRampToValueAtTime(48, t + .09);
+  o.connect(env(t, amp, .002, .32, dry));
+  const hp = filt('highpass', 2500);
+  noise(t, t + .02).connect(hp);
+  hp.connect(env(t, amp * .25, .001, .012, dry));
+}
+function openHat(t, amp) {
+  const bp = filt('bandpass', 9000), hp = filt('highpass', 6500);
+  bp.Q.value = 1;
+  [205.3, 304.4, 369.6, 522.7, 540, 800].forEach(f => osc('square', f, t, t + .25).connect(bp));
+  bp.connect(hp);
+  hp.connect(env(t, amp, .002, .17, dry));
+}
+function supersaw(t, m, amp, dur) {
+  const lp = filt('lowpass', 4200), g = env(t, amp, .004, dur);
+  g.connect(echoIn);
+  lp.connect(g);
+  [-18, -8, 0, 8, 18].forEach(cents => { const o = osc('sawtooth', hz(m), t, t + dur + .1); o.detune.value = cents; o.connect(lp); });
+}
+function schedTechno(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r % 2 === 0) kickHard(t, .8);
+  if (s.r === 2 || s.r === 6) drum('clap', t, .45);
+  if (s.r % 2) { openHat(t, .06); synBass(t, ch.root + 12, st * .8); }
+  else hat80(t, .035);
+  if (s.r === 7 && density(s.c) >= 3) [0, .25, .5, .75].forEach((d, i) => drum('snare', t + d * st, .18 + .06 * i));
+  if (l) { supersaw(t, ch.lead[l - 1], .05 + .015 * l, .22); supersaw(t, ch.lead[l - 1] - 12, .03, .22); }
+}
+/* ---------- drum & bass ---------- */
+function snareDnb(t, amp) {
+  const o = osc('triangle', 240, t, t + .15);
+  o.frequency.exponentialRampToValueAtTime(190, t + .03);
+  o.connect(env(t, amp * .6, .001, .09));
+  const hp = filt('highpass', 1800);
+  noise(t, t + .2).connect(hp);
+  hp.connect(env(t, amp * .55, .001, .13));
+}
+function sub(t, m, dur, amp) {
+  const g = ctx.createGain();
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .02);
+  g.gain.setValueAtTime(amp, t + dur * .8);
+  g.gain.linearRampToValueAtTime(.0001, t + dur);
+  g.connect(dry);
+  osc('sine', hz(m), t, t + dur + .05).connect(g);
+  const h = ctx.createGain(); h.gain.value = .25; h.connect(g);
+  osc('triangle', hz(m + 12), t, t + dur + .05).connect(h);
+}
+function padSoft(t, bar, notes) {
+  const g = ctx.createGain(), lp = filt('lowpass', 950);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(.05, t + .6);
+  g.gain.setValueAtTime(.05, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + 1);
+  lp.connect(g); g.connect(bus);
+  notes.forEach(m => [['triangle', -6], ['sine', 6]].forEach(([ty, c]) => { const o = osc(ty, hz(m), t, t + bar + 1.1); o.detune.value = c; o.connect(lp); }));
+}
+function rhodes(t, m, amp) {
+  const f = hz(m), car = osc('sine', f, t, t + 1.6), mod = osc('sine', f, t, t + 1.6), mg = ctx.createGain();
+  mg.gain.value = .0001;
+  mg.gain.setValueAtTime(f * 2.2, t);
+  mg.gain.exponentialRampToValueAtTime(f * .05, t + .5);
+  mod.connect(mg); mg.connect(car.frequency);
+  const g = env(t, amp, .003, 1.4);
+  g.connect(echoIn);
+  car.connect(g);
+}
+function schedDnb(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); sub(t, ch.root, st * 4.8, .38); }
+  if (s.r === 5) sub(t, ch.root, st * 2.8, .32);
+  if (s.r === 0) kickHard(t, .85);
+  if (s.r === 5) kickHard(t, .7);
+  if (s.r === 2 || s.r === 6) snareDnb(t, .6);
+  if (s.r === 3 || s.r === 7) snareDnb(t + st / 2, .14);
+  hat80(t, .05); hat80(t + st / 2, .03);
+  if (l) rhodes(t, ch.lead[l - 1], .09 + .025 * l);
+}
+/* ---------- hip-hop (boom bap) ---------- */
+function kickBoom(t, amp) {
+  const o = osc('sine', 120, t, t + .6);
+  o.frequency.exponentialRampToValueAtTime(42, t + .12);
+  const lp = filt('lowpass', 900);
+  o.connect(lp); lp.connect(env(t, amp, .003, .5, dry));
+}
+function snareBoom(t, amp) {
+  snareDnb(t, amp * .8);
+  drum('clap', t + .004, amp * .35);
+}
+function bassRound(t, m, dur, amp) {
+  const lp = filt('lowpass', 600);
+  lp.connect(env(t, amp, .01, dur, dry));
+  osc('triangle', hz(m), t, t + dur + .05).connect(lp);
+  osc('sine', hz(m), t, t + dur + .05).connect(lp);
+}
+function vibes(t, m, amp) {
+  const g = env(t, amp, .004, 1.1);
+  g.connect(echoIn);
+  const trem = ctx.createGain(), lfo = osc('sine', 5.5, t, t + 1.3), depth = ctx.createGain();
+  trem.gain.value = .75; depth.gain.value = .25;
+  lfo.connect(depth); depth.connect(trem.gain);
+  trem.connect(g);
+  osc('sine', hz(m), t, t + 1.3).connect(trem);
+  const h = ctx.createGain(); h.gain.value = .12; h.connect(trem);
+  osc('sine', hz(m) * 4, t, t + .4).connect(h);
+}
+function schedHiphop(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); kickBoom(t, .9); bassRound(t, ch.root + 12, st * 2.6, .4); }
+  if (s.r === 3) { kickBoom(t, .55); bassRound(t, ch.root + 12, st * 1.6, .3); }
+  if (s.r === 5) { kickBoom(t, .75); bassRound(t, ch.root + 24, st * 1.6, .28); }
+  if (s.r === 2 || s.r === 6) snareBoom(t, .7);
+  if (s.r === 7 && density(s.c) >= 3) snareDnb(t + st / 2, .15);
+  hat80(t, s.r % 2 ? .025 : .045);
+  if (l) vibes(t, ch.lead[l - 1], .07 + .02 * l);
+}
+/* ---------- rap (trap) ---------- */
+function bass808(t, m, dur, amp, from) {
+  const o = osc('sine', hz(from == null ? m : from), t, t + dur + .05), g = ctx.createGain();
+  if (from != null) o.frequency.exponentialRampToValueAtTime(hz(m), t + .12);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .005);
+  g.gain.setValueAtTime(amp * .9, t + dur * .6);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(tube);
+}
+function schedRap(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); kickHard(t, .8); bass808(t, ch.root, st * 2.8, .5); }
+  if (s.r === 3) bass808(t, ch.root, st * 1.2, .4);
+  if (s.r === 5) { kickHard(t, .6); bass808(t, ch.root, st * 2.6, .45, ch.root + 12); }
+  if (s.r === 4) snareBoom(t, .8);
+  const roll = s.r === 7 && density(s.c) >= 3 ? 4 : l === 4 ? 4 : l === 3 ? 3 : 2;
+  for (let i = 0; i < roll; i++) hat80(t + i * st / roll, i ? .03 : .05);
+  if (l) bell(t, ch.lead[l - 1], .06 + .02 * l, .4, .9);
+}
 function deep(t) {
   if (!thump.vol) return;
   const f = hz(thump.m), lp = filt('lowpass', 320), L = thump.len;
@@ -682,8 +931,12 @@ function drum(k, t, amp) {
   else { const f = filt('highpass', 5000); noise(t, t + .18).connect(f); f.connect(env(t, amp * .4, .02, .12)); }
 }
 function sched(s, t) {
+  if (mode === 'F') { schedTechno(s, t); return; }
+  if (mode === 'G') { schedDnb(s, t); return; }
+  if (mode === 'H') { schedHiphop(s, t); return; }
+  if (mode === 'J') { schedRap(s, t); return; }
   if (mode === 'E') {
-    const l = s.r < 7 ? data[s.r][s.c] : 0, ch = CH[chordKey(s.c)];
+    const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch;
     if (s.r === 0) pad(t, stepDur() * 8, ch.pad);
     if (s.r === 0 || s.r === 4) drum('kick', t, .75);
     if (s.r === 2 || s.r === 6) snare80(t, .55);
@@ -727,8 +980,9 @@ function tick() {
       if (!R || ring < R) idx = 0;
       else { clearInterval(timer); timer = null; endAt = nextT; return; }
     }
-    sched(S[idx], nextT);
-    queue.push({t: nextT, s: S[idx], i: idx, n: S.length, ring, R: repsBy[mode]});
+    const sw = MODES[mode].swing && S[idx].r % 2 ? stepDur() * MODES[mode].swing : 0;
+    sched(S[idx], nextT + sw);
+    queue.push({t: nextT + sw, s: S[idx], i: idx, n: S.length, ring, R: repsBy[mode]});
     nextT += stepDur();
     idx++;
   }
@@ -748,22 +1002,19 @@ function show(q) {
   unlight();
   const s = q.s;
   follow(s.c);
-  if (mode === 'E') {
-    const k = chordKey(s.c), l = s.r < 7 ? data[s.r][s.c] : 0;
+  if (BAR8(mode)) {
+    const ca = chordAt(s.c), k = ca.name, l = s.r < 7 ? data[s.r][s.c] : 0;
     if (s.r < 7) { light(cellAt[s.r][s.c], l > 0); mark(s.r); }
     light($('sc' + s.c), false);
-    $('now').textContent = s.r === 7 ? 'fill · ' + k : l ? nn(CH[k].lead[l - 1]) + ' over ' + k : k;
-    $('nowSub').textContent = (s.r < 7 ? DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4' : 'Week of ' + fmt(dt(s.c)) + ' · drum fill') + ' · beat ' + (s.r + 1) + ' of 8 · chord ' + k + ' (' + density(s.c) + ' active days)';
+    $('now').textContent = s.r === 7 ? 'fill · ' + k : l ? nn(ca.ch.lead[l - 1]) + ' over ' + k : k;
   } else if (mode === 'D') {
     const l = data[s.r][s.c], dr = s.r === 0 || s.r === 3 || l >= 3;
     light(cellAt[s.r][s.c], l > 0); mark(s.r);
     $('now').textContent = l ? nn(D_LV[l - 1]) + (dr ? ' + drum' : '') : (dr ? 'drum' : 'rest');
-    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4 · beat ' + (s.r + 1) + ' of 7 · drone D2 + A2';
   } else if (mode === 'B') {
     const l = data[s.r][s.c], sc = scB(s.c);
     light(cellAt[s.r][s.c], l > 0); light($('sc' + s.c), false); mark(s.r);
     $('now').textContent = l ? nn(sc.lv[l - 1]) : 'rest';
-    $('nowSub').textContent = DAYS[s.r] + ', ' + fmt(dt(s.c, s.r)) + ' · brightness ' + l + ' of 4 · beat ' + (s.r + 1) + ' of 7 · ' + sc.s + (skB === 'auto' ? ' (' + density(s.c) + ' active days)' : '');
   } else {
     const hits = [], sc = SCALES[sk];
     for (let r = 0; r < 7; r++) {
@@ -773,7 +1024,6 @@ function show(q) {
     }
     const k = hits.length, w = mode === 'A' ? (k === 1 ? 'note' : 'notes') : (k === 1 ? 'hit' : 'hits');
     $('now').textContent = k ? hits.join(' · ') : 'silence';
-    $('nowSub').textContent = 'Week of ' + fmt(dt(s.c)) + ' · ' + k + ' ' + w;
   }
   $('pos').textContent = 'Round ' + (q.ring + 1) + (q.R ? ' of ' + q.R : '') + ' · step ' + (q.i + 1) + ' of ' + q.n;
 }
@@ -800,13 +1050,14 @@ function start() {
   timer = setInterval(tick, 25);
   tick();
   cancelAnimationFrame(raf);
-  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); }
+  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); $('nowSub').hidden = true; }
 }
 function stop() {
   clearInterval(timer); timer = null; queue = [];
   cancelAnimationFrame(raf); raf = 0;
   unlight();
   setPlayBtn(false);
+  $('nowSub').hidden = false;
   $('pos').textContent = 'Stopped';
 }
 const playing = () => raf !== 0;
@@ -816,12 +1067,13 @@ function restartIfPlaying() { if (playing()) start(); }
 const validUser = u => /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(u);
 $('userForm').addEventListener('submit', e => {
   e.preventDefault();
+  if ($('userForm').classList.contains('is-retry') && retryTarget && $('user').value.trim() === (retryTarget.demo ? '' : retryTarget.u)) { load(retryTarget.u, retryTarget.demo); return; }
   const u = $('user').value.trim().replace(/^@/, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/[/?#].*$/, '');
   if (!u) { setField('invalid'); setStatus('err', ['Enter a GitHub username, for example octocat.']); $('user').focus(); return; }
   if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” can’t be a GitHub username. Use only letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
   if (location.hash !== '#' + u) location.hash = u; else load(u);
 });
-$('user').addEventListener('input', () => { if ($('userForm').classList.contains('invalid') || !$('okMark').hidden) setField('idle'); });
+$('user').addEventListener('input', () => { const f = $('userForm'); if (f.classList.contains('invalid') || f.classList.contains('is-retry') || !$('okMark').hidden) setField('idle'); });
 window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
 const colFromX = x => { const r = $('trim').getBoundingClientRect(); return Math.floor((x - r.left) / r.width * nW); };
 grid.addEventListener('pointerdown', e => {
@@ -867,9 +1119,14 @@ grid.addEventListener('click', e => {
   $('scroller').scrollLeft = x;
   cellAt[r][c]?.focus({preventScroll: true});
 });
-document.querySelectorAll('.mode').forEach(el => el.addEventListener('click', () => { mode = el.dataset.m; render(); restartIfPlaying(); }));
+$('privacyOpen').addEventListener('click', () => { const d = $('privacy'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
+$('privacy').addEventListener('click', e => { if (e.target === $('privacy')) $('privacy').close(); });
+function setMode(m) { mode = m; render(); restartIfPlaying(); }
+document.querySelectorAll('.mode').forEach(el => el.addEventListener('click', () => setMode(el.dataset.m)));
+$('modeSel').innerHTML = [...document.querySelectorAll('.mode')].map(el => '<option value="' + el.dataset.m + '">' + el.textContent + '</option>').join('');
+$('modeSel').addEventListener('change', e => setMode(e.target.value));
 $('play').addEventListener('click', () => { if (playing()) stop(); else start(); });
-$('tempo').addEventListener('input', e => { bpm = +e.target.value; info(); });
+$('tempo').addEventListener('input', e => { bpmBy[mode] = +e.target.value; info(); });
 $('scale').addEventListener('change', e => { if (mode === 'B') skB = e.target.value; else if (mode !== 'D') sk = e.target.value; render(); });
 document.querySelectorAll('#reps button').forEach(b => b.addEventListener('click', () => { repsBy[mode] = +b.dataset.r; fillScale(); info(); }));
 $('span').addEventListener('change', e => { span = e.target.value; load(user, !location.hash); });
@@ -878,6 +1135,33 @@ $('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
 $('tTry').addEventListener('click', () => { initAudio(); ctx.resume().catch(() => {}); deep(ctx.currentTime + .03); });
 $('reset').addEventListener('click', () => { data = orig.map(r => r.slice()); render(); });
 $('clear').addEventListener('click', () => { data = data.map(r => r.map(() => 0)); render(); });
+
+/* ---------- background ---------- */
+function drawBg() {
+  const svg = $('bgfx'), W = innerWidth, H = innerHeight;
+  if (W <= 720) { svg.innerHTML = ''; return; }
+  const cell = 18, gap = 5, step = cell + gap, edge = Math.max(W * .04, W / 2 - 560) + step;
+  const cols = Math.ceil(W / step), rows = Math.ceil(H / step);
+  let seed = 7, out = '';
+  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  for (let c = 0; c < cols; c++) {
+    const x = c * step;
+    const edgeDist = Math.min(x, W - x - cell);
+    const near = Math.max(0, 1 - edgeDist / edge);
+    for (let r = 0; r < rows; r++) {
+      const v = rnd();
+      if (x > edge && x < W - edge - cell) continue;
+      const p = v * (1.1 - .5 * near);
+      const lv = p < .025 ? 4 : p < .06 ? 3 : p < .13 ? 2 : p < .28 ? 1 : 0;
+      out += '<rect x="' + x + '" y="' + r * step + '" width="' + cell + '" height="' + cell + '" rx="4" fill="var(--c' + lv + ')"/>';
+    }
+  }
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.innerHTML = out;
+}
+let bgT = 0;
+addEventListener('resize', () => { clearTimeout(bgT); bgT = setTimeout(drawBg, 150); });
+drawBg();
 
 /* ---------- boot ---------- */
 const tn = [];
