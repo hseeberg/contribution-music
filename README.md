@@ -1,92 +1,1129 @@
-# Contribution Music
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contribution Music</title>
+<meta name="description" content="Turn any GitHub contribution graph into music. Five styles: 80s, Viking, Drums, Melody and Chords.">
+<link rel="canonical" href="https://hseeberg.github.io/contribution-music/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Contribution Music">
+<meta property="og:title" content="Contribution Music">
+<meta property="og:description" content="Turn any GitHub contribution graph into music. Five styles: 80s, Viking, Drums, Melody and Chords.">
+<meta property="og:url" content="https://hseeberg.github.io/contribution-music/">
+<meta property="og:image" content="https://hseeberg.github.io/contribution-music/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A GitHub contribution graph with a pink playhead, under the title Contribution Music.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-SemiBold.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Mona Sans";src:url(fonts/MonaSans-ExtraBold.woff2) format("woff2");font-weight:800;font-display:swap}
+/* VOICE everyday toy, precise and calm
+   IDEA the GitHub contribution graph behaves like a step sequencer; the page opens with a github.com address bar
+   PICTURE the grid itself, large; a pink playhead walks it in the chosen reading order
+   COLOUR GitHub ground, the five contribution greens, pink playhead accent
+   TYPE Mona Sans (GitHub's own face)
+   LAYOUT address bar + title; board full width; readout and controls side by side; phone stacks */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0d1117);--panel:light-dark(#f6f8fa,#151b23);--line:light-dark(#d1d9e0,#30363d);--ink:light-dark(#1f2328,#f0f6fc);--mute:light-dark(#59636e,#9198a1);--c0:light-dark(#ebedf0,#232a33);--c1:light-dark(#9be9a8,#0e4429);--c2:light-dark(#40c463,#006d32);--c3:light-dark(#30a14e,#26a641);--c4:light-dark(#216e39,#39d353);--hot:light-dark(#cf2a6f,#ff7eb6);--go:light-dark(#1f883d,#238636);--mi:light-dark(#0969da,#4493f8);--do:light-dark(#8250df,#ab7df8);--du:light-dark(#bf8700,#e3b341);--err:light-dark(#cf222e,#ff7b72);--ok:light-dark(#1a7f37,#3fb950);--focus:light-dark(#0969da,#4493f8);--or:light-dark(#bc4c00,#f0883e)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Mona Sans",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+a{color:inherit}
+/* Background: contribution-style squares only at the far left and right, fading out before the content column */
+.bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.5;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 max(2vw,calc(50% - 700px)),transparent max(4vw,calc(50% - 560px)),transparent min(96vw,calc(50% + 560px)),#000 min(98vw,calc(50% + 700px)),#000 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 max(2vw,calc(50% - 700px)),transparent max(4vw,calc(50% - 560px)),transparent min(96vw,calc(50% + 560px)),#000 min(98vw,calc(50% + 700px)),#000 100%)}
+.bgfx rect{rx:4px}
+@media(max-width:720px){.bgfx{display:none}}
+.band{padding:clamp(20px,3vw,40px) max(4vw,16px);max-width:1240px;margin:0 auto}
+.top{padding-bottom:0;display:grid;gap:12px;justify-items:center;text-align:center}
+.addr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--panel);max-width:640px;width:100%;overflow:hidden;margin-top:8px;text-align:left}
+.addr:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent)}
+.addr.invalid:focus-within{border-color:var(--err);box-shadow:0 0 0 3px color-mix(in srgb,var(--err) 30%,transparent)}
+.addr input{-webkit-appearance:none;appearance:none}
+.addr input:focus,.addr input:focus-visible{outline:none}
+.addr input::-webkit-search-cancel-button,.addr input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.addr button:focus-visible{outline:3px solid #fff;outline-offset:-6px}
+.addr.invalid{border-color:var(--err)}
+.addr .host{display:flex;align-items:center;padding:0 2px 0 18px;color:var(--mute);font-size:17px;white-space:nowrap}
+.addr input{flex:1;border:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink);padding:10px 8px;min-height:48px;outline:0}
+.addr input::placeholder{color:var(--mute);font-weight:400}
+.okmark{display:flex;align-items:center;padding-right:10px;color:var(--ok)}
+.okmark[hidden]{display:none}
+.okmark svg{width:18px;height:18px}
+.addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap;min-width:96px}
+.addr.busy button{cursor:progress;opacity:.85}
+.status{display:flex;gap:8px;align-items:flex-start;justify-content:center;font-size:14px;min-height:1.6em;max-width:640px;color:var(--ink);text-align:left}
+.status:empty{display:none}
+.status p{margin:0}
+.status svg{flex:none;width:16px;height:16px;margin-top:3px}
+.status a{color:inherit;text-underline-offset:2px}
+.st-info{color:var(--mute)}.st-info svg{color:var(--mute)}
+.st-ok svg{color:var(--ok)}
+.st-warn svg{color:var(--du)}
+.st-err{color:var(--err)}
+.spin{flex:none;width:14px;height:14px;margin-top:4px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.playwrap{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
+.seg button{min-height:42px;padding:6px 14px;border:0;border-radius:999px;background:transparent;color:var(--mute);font-weight:600;cursor:pointer;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.sel{position:relative;display:block}
+.sel select{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer}
+.sel::after{content:"";position:absolute;right:16px;top:50%;width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 6px;font-weight:800;text-wrap:balance}
+.lede{margin:0;color:var(--mute);max-width:60ch}
+.stats{margin:0;color:var(--mute);font-size:14px}
+.stats b{color:var(--ink);font-weight:600;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(14px,2.2vw,24px)}
+.bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin-bottom:18px}
+.modes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.modesel{display:none;width:100%;max-width:360px}
+.modesel select{min-height:48px;border-radius:999px;padding-left:20px;font-weight:600}
+button,select{font:inherit;color:inherit}
+.mode{min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600}
+.mode span{color:var(--mute);font-weight:400;margin-left:6px}
+.mode[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mode[aria-pressed=true] span{color:inherit;opacity:.75}
+.play{min-height:48px;min-width:132px;padding:8px 22px;border:0;border-radius:999px;background:var(--go);color:#fff;font-weight:700;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;justify-content:center}
+.play svg{width:16px;height:16px;fill:currentColor}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.scroll{overflow-x:auto;padding:6px 2px;position:relative}
+#grid{display:grid;grid-template-columns:1.6em repeat(var(--n),minmax(0,1fr)) 7.4em;gap:clamp(2px,.5vw,5px);align-items:center;max-width:1000px;margin:0 auto}
+#grid.wide{grid-template-columns:1.6em repeat(var(--n),14px) 7.4em;gap:3px;max-width:none;width:max-content}
+.hd{font-size:13px;color:var(--mute);white-space:nowrap;overflow:visible;height:20px}
+.lab{font-size:13px;color:var(--mute);font-weight:600}
+.map{font-size:13px;color:var(--mute);padding-left:8px;white-space:nowrap}
+.map.on{color:var(--hot);font-weight:700}
+.cell{display:block;width:100%;aspect-ratio:1;border:0;padding:0;border-radius:22%;background:var(--c0);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.l1{background:var(--c1)}.l2{background:var(--c2)}.l3{background:var(--c3)}.l4{background:var(--c4)}
+.fut{visibility:hidden}
+.cell.pc{box-shadow:0 0 0 2px var(--hot)}
+.cell.hit{transform:scale(1.2);box-shadow:0 0 0 3px var(--hot),0 0 14px var(--hot)}
+.sc{height:10px;border-radius:3px;background:var(--c0);margin-top:4px}
+.s-pm{background:var(--mi)}.s-dor{background:var(--do)}.s-pd{background:var(--du)}.s-ins{background:var(--c4)}
+.sc.pc{box-shadow:0 0 0 2px var(--hot)}
+.c-Am{background:var(--mi)}.c-F{background:var(--do)}.c-C{background:var(--du)}.c-G{background:var(--or)}
+.trim{position:relative;height:44px;touch-action:none;cursor:pointer}
+.trim::before{content:"";position:absolute;left:0;right:0;top:18px;height:8px;border-radius:4px;background:var(--c0)}
+.tsel{position:absolute;top:14px;height:16px;border-radius:6px;background:color-mix(in srgb,var(--hot) 30%,transparent);border:2px solid var(--hot)}
+.th{position:absolute;top:0;width:28px;height:44px;margin-left:-14px;border:0;background:transparent;cursor:ew-resize;padding:0}
+.th::after{content:"";position:absolute;left:10px;top:7px;width:8px;height:30px;border-radius:4px;background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
+.cell.out,.sc.out{opacity:.2}
+.cell.gap,.sc.gap{opacity:.45}
+.trimbar{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;text-align:center}
+.trimbar p{margin:0 0 4px;font-size:16px;font-weight:600;flex:1 1 100%}
+.hint{text-align:center;margin:8px 0 0}
+.trimbar label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.trimbar input{width:20px;height:20px;accent-color:var(--go)}
+.row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;padding-top:16px}
+.pos{margin:0;font-size:14px;color:var(--mute)}
+.big{margin:4px 0 2px;font-size:clamp(28px,4.4vw,44px);line-height:1.1;font-weight:800;letter-spacing:-.02em;min-height:1.1em;overflow-wrap:anywhere}
+.sub{margin:0;color:var(--mute)}
+.how{border-top:1px solid var(--line);padding-top:14px;margin-top:18px}
+.how h2{font-size:18px;margin:0 0 4px}
+.how p{margin:0}
+.ctl{display:grid;gap:16px;align-content:start}
+.ctl label{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
+.ctl output{color:var(--ink);font-weight:600;white-space:nowrap}
+input[type=range]{width:100%;height:32px;accent-color:var(--go)}
+select{width:100%;min-height:44px;font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+select:disabled{opacity:.6}
+.thump{border:1px solid var(--line);border-radius:10px;padding:12px 14px 14px;margin:0;display:grid;gap:12px}
+.thump[hidden]{display:none}
+.thump legend{font-weight:700;padding:0 6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(11em,1fr));gap:12px 16px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.ghost{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
+.ghost:hover{border-color:var(--mute)}
+.note{font-size:14px;color:var(--mute);margin:0 auto;padding-top:16px;text-align:center;max-width:70ch}
+.readout{text-align:center}
+.row.solo{grid-template-columns:minmax(0,1fr)}
+.panel[hidden]{display:none}
+.cell{cursor:default}
+.readout .how{border-top:0;padding-top:0;margin-top:0}
+.readout p{max-width:70ch;margin-inline:auto}
+.tempo{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 18px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.tempo label{font-size:14px;color:var(--mute);white-space:nowrap;margin:0}
+.tempo output{display:inline-block;min-width:4.8em;text-align:left;color:var(--ink);font-weight:600}
+.tempo input[type=range]{width:140px;height:32px}
+.spansel{display:inline-block;width:auto}
+.spansel select{width:auto;min-height:48px;font-size:15px;border-radius:999px;padding-left:18px}
+.ghost[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.linkbtn{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:24px}
+dialog#privacy{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:min(86vh,900px)}
+dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
+.dlg{padding:clamp(20px,3vw,32px);overflow-y:auto;max-height:inherit}
+.dlg h2{font-size:28px;line-height:1.1;margin:0 0 8px;outline:none}
+.dlg .lead{font-size:17px;font-weight:600;margin:0 0 8px}
+.dlg h3{font-size:16px;margin:20px 0 6px}
+.dlg ul{margin:0;padding-left:1.2em}
+.dlg li{margin:4px 0}
+.dlg a{text-underline-offset:2px}
+.dlg .upd{font-size:14px;color:var(--mute);margin:20px 0 16px}
+.dlg form{margin:0;text-align:right}
+@media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
+@media(max-width:600px){.modes{display:none}.modesel{display:block}}
+@media(max-width:420px){.mode{padding:8px 12px}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}.cell{transition:none}.cell.hit{transform:none}}
+</style>
+</head>
+<body>
+<svg class="bgfx" id="bgfx" aria-hidden="true" focusable="false"></svg>
+<header class="band top">
+  <div>
+    <h1>Contribution Music</h1>
+    <p class="lede">Turn a GitHub contribution graph into music. Enter a username, choose how to read the graph, and press Play.</p>
+  </div>
+  <form class="addr" id="userForm" autocomplete="off" novalidate>
+    <label class="host" for="user">github.com/</label>
+    <input id="user" type="search" enterkeyhint="go" name="gh-handle" placeholder="username" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="60" aria-describedby="status" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other">
+    <span class="okmark" id="okMark" hidden title="Graph loaded" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <button type="submit" id="loadBtn">Load graph</button>
+  </form>
+  <div class="status" id="status" aria-live="polite"></div>
+  <p class="sr" id="srMsg" aria-live="polite"></p>
+  <p class="stats" id="stats"></p>
+</header>
 
-Turn any GitHub contribution graph into music.
+<main class="band">
+  <section class="panel">
+    <div class="bar">
+      <span class="sel modesel"><label class="sr" for="modeSel">Style</label><select id="modeSel"></select></span>
+      <div class="modes" role="group" aria-label="How to read the graph">
+        <button class="mode" data-m="E">80s</button>
+        <button class="mode" data-m="F">90s Techno</button>
+        <button class="mode" data-m="G">Drum &amp; Bass</button>
+        <button class="mode" data-m="H">Hip-hop</button>
+        <button class="mode" data-m="J">Rap</button>
+        <button class="mode" data-m="D">Viking</button>
+        <button class="mode" data-m="C">Drums</button>
+        <button class="mode" data-m="B">Melody</button>
+        <button class="mode" data-m="A">Chords</button>
+      </div>
+      <div class="playwrap">
+        <div class="seg" id="reps" role="group" aria-label="How many times to play">
+          <button type="button" data-r="1">Once</button><button type="button" data-r="3">3 times</button><button type="button" data-r="0">Loop</button>
+        </div>
+        <button class="play" id="play"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span></button>
+        <div class="tempo"><label for="tempo">Tempo <output id="tempoOut"></output></label><input type="range" id="tempo" min="60" max="180" step="1" value="110"></div>
+      </div>
+    </div>
+    <div class="scroll" id="scroller"><div id="grid"></div></div>
+    <p class="pos hint">Drag the two handles under the graph to choose which weeks play.</p>
+    <div class="trimbar">
+      <p id="trimInfo"></p>
+      <span class="sel spansel"><label class="sr" for="span">Time range</label><select id="span"><option value="all">Since first contribution</option><option value="last">Last 12 months</option></select></span>
+      <label><input type="checkbox" id="shorten" checked> Skip long silences</label>
+      <label><input type="checkbox" id="fitAct" checked> Trim empty start and end</label>
+    </div>
+  </section>
 
-![Contribution Music: a GitHub contribution graph with a pink playhead](og.png)
+  <section class="row" id="lowRow">
+    <div class="panel readout">
+      <div class="how">
+        <h2 id="mTitle"></h2>
+        <p id="mDesc"></p>
+      </div>
+    </div>
+    <div class="panel ctl" id="ctlPanel">
+      <fieldset class="thump" id="thump">
+        <legend>Sunday thump</legend>
+        <div class="two">
+          <div><label for="tNote">Pitch</label><span class="sel"><select id="tNote"></select></span></div>
+          <div><label for="tVol">Volume <output id="tVolOut"></output></label><input type="range" id="tVol" min="0" max="100" step="1"></div>
+          <div><label for="tLen">Length <output id="tLenOut"></output></label><input type="range" id="tLen" min="0.3" max="2.5" step="0.1"></div>
+          <div><label for="tSub">Sub-bass <output id="tSubOut"></output></label><input type="range" id="tSub" min="0" max="100" step="1"></div>
+        </div>
+        <button class="ghost" id="tTry" type="button">Play one thump</button>
+      </fieldset>
+    </div>
+  </section>
+  <p class="note"><button class="linkbtn" id="privacyOpen" type="button">Privacy</button> · <a href="https://github.com/hseeberg/contribution-music">Project on GitHub</a> · No sound on iPhone? Turn off silent mode. Contribution data comes from the unofficial <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a> and updates every hour. All sound is made in your browser.</p>
+</main>
 
-- **Play it:** https://hseeberg.github.io/contribution-music/
-- **Source code:** https://github.com/hseeberg/contribution-music
-- **Open a user directly:** `https://hseeberg.github.io/contribution-music/#USERNAME`
+<dialog id="privacy" aria-labelledby="privacyTitle">
+  <div class="dlg">
+    <h2 id="privacyTitle" tabindex="-1" autofocus>Privacy</h2>
+    <p class="lead">This page does not collect, keep or sell your data.</p>
+    <h3>When you load a graph</h3>
+    <ul>
+      <li>You type a GitHub username. The page sends this username to <a href="https://github.com/grubersjoe/github-contributions-api">github-contributions-api</a>.</li>
+      <li>This service is not part of this page. Another person operates it. It reads public contribution data from GitHub.</li>
+      <li>The service sends back the number of contributions for each day. The page uses these numbers only to show the graph and to make sound.</li>
+      <li>The page does not keep the username or the numbers. When you close the page, they are gone.</li>
+    </ul>
+    <h3>What the page does not do</h3>
+    <ul>
+      <li>It does not use cookies.</li>
+      <li>It does not use analytics or tracking.</li>
+      <li>It does not save data on your device.</li>
+      <li>It sends the username only to the contribution service. It sends no other data.</li>
+      <li>It does not use your microphone or camera.</li>
+    </ul>
+    <h3>Sound</h3>
+    <ul><li>Your browser makes all sound on your device. No audio leaves your device.</li></ul>
+    <h3>Services that you connect to</h3>
+    <ul>
+      <li>GitHub Pages hosts this page. GitHub can record your IP address when the page loads. Read the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</li>
+      <li>The contribution service can record your IP address and the username that you type. We do not control this service.</li>
+      <li>All fonts and files load from this website. The page does not load files from other websites.</li>
+    </ul>
+    <h3>Good to know</h3>
+    <ul>
+      <li>The page shows public contributions only. Private contributions show only if the account owner turns them on in GitHub.</li>
+      <li>A link such as <code>…/#octocat</code> keeps the username in your browser history. Your browser does not send this part of the link to a server.</li>
+    </ul>
+    <h3>Questions</h3>
+    <ul><li>Open an issue at <a href="https://github.com/hseeberg/contribution-music/issues">github.com/hseeberg/contribution-music</a>.</li></ul>
+    <p class="upd">Last update: 26 November 2026</p>
+    <form method="dialog"><button class="ghost" id="privacyClose">Close</button></form>
+  </div>
+</dialog>
 
-## How to use
+<script>
+{
+const DAY = 864e5;
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DS = ['S','M','T','W','T','F','S'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const API = 'https://github-contributions-api.jogruber.de/v4/';
+/* Offline fallback: hseeberg, Aug-Nov 2026, read by eye from a screenshot */
+const SAMPLE_START = '2026-08-23';
+const SAMPLE = [
+  [0,0,0,0,0,0,0,0,0,1,1,1,0,0],
+  [0,0,0,0,0,1,1,0,0,1,0,1,1,0],
+  [1,0,0,0,2,1,1,0,1,1,1,1,0,2],
+  [1,0,0,0,0,0,2,0,2,0,3,0,0,0],
+  [0,0,0,0,1,1,2,4,1,1,1,0,1,0],
+  [2,0,0,0,0,1,4,2,1,1,3,0,4,0],
+  [3,0,0,0,0,0,1,0,1,0,3,0,0,0]
+];
+/* Gappy public graph used when the hash is #sample-gaps: tests the trim tool */
+const GAPS_START = '2025-11-23';
+const GAPS = [[13,6,2],[26,5,1],[40,4,1],[40,6,1],[41,0,4],[41,1,4],[41,2,4],[41,3,2],[41,4,4],[41,5,2],[42,1,2],[42,3,2],[45,0,1],[46,0,1],[51,3,1]];
+const NN = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const nn = m => NN[m % 12] + (Math.floor(m / 12) - 1);
+const hz = m => 440 * 2 ** ((m - 69) / 12);
+const SCALES = {
+  pd: {name: 'Major pentatonic (C)', s: 'C major', rows: [74,72,69,67,64,62,60], lv: [60,64,67,72]},
+  pm: {name: 'Minor pentatonic (A)', s: 'A minor', rows: [72,69,67,64,62,60,57], lv: [57,60,64,69]},
+  dor: {name: 'Dorian (D)', s: 'D dorian', rows: [72,71,69,67,65,64,62], lv: [62,65,69,74]},
+  ins: {name: 'In-sen, Japanese (C)', s: 'C in-sen', rows: [73,72,70,67,65,61,60], lv: [60,65,67,72]}
+};
+const DRUMS = ['shaker','hi-hat','clap','high tom','snare','kick','low tom'];
+const DK = ['shaker','hat','clap','tomH','snare','kick','tomL'];
+const D_LV = [62, 65, 69, 72];
+/* 80s: week density picks the chord of the classic minor progression */
+const CH = {
+  Am: {root: 45, pad: [57, 60, 64], lead: [69, 72, 76, 81]},
+  F: {root: 41, pad: [53, 57, 60], lead: [65, 69, 72, 77]},
+  C: {root: 48, pad: [55, 60, 64], lead: [72, 76, 79, 84]},
+  G: {root: 43, pad: [55, 59, 62], lead: [67, 71, 74, 79]}
+};
+const chordOf = n => n <= 2 ? 'Am' : n === 3 ? 'F' : n === 4 ? 'C' : 'G';
+/* Chord styles: week density (1–2 / 3 / 4 / 5–7 active days) picks one of four chords */
+const PROG = {
+  E: [['Am', CH.Am], ['F', CH.F], ['C', CH.C], ['G', CH.G]],
+  F: [['Am', {root: 45, pad: [57, 60, 64], lead: [69, 72, 76, 81]}], ['Dm', {root: 38, pad: [57, 62, 65], lead: [62, 65, 69, 74]}],
+      ['F', {root: 41, pad: [57, 60, 65], lead: [65, 69, 72, 77]}], ['G', {root: 43, pad: [55, 59, 62], lead: [67, 71, 74, 79]}]],
+  G: [['Am7', {root: 33, pad: [57, 60, 64, 67], lead: [69, 72, 76, 79]}], ['Dm7', {root: 38, pad: [57, 60, 62, 65], lead: [62, 65, 69, 72]}],
+      ['Fmaj7', {root: 41, pad: [57, 60, 64, 65], lead: [65, 69, 72, 76]}], ['Em7', {root: 40, pad: [55, 59, 62, 64], lead: [64, 67, 71, 74]}]]
+};
+PROG.H = [['Am9', {root: 33, pad: [55, 60, 64, 71], lead: [69, 72, 76, 79]}], ['Dm9', {root: 38, pad: [53, 57, 60, 64], lead: [65, 69, 72, 76]}],
+          ['Fmaj7', {root: 41, pad: [52, 57, 60, 64], lead: [64, 69, 72, 76]}], ['E7', {root: 40, pad: [56, 62, 67], lead: [64, 68, 71, 74]}]];
+PROG.J = [['Am', {root: 33, pad: [57, 60, 64], lead: [69, 72, 76, 81]}], ['F', {root: 29, pad: [53, 57, 60], lead: [65, 69, 72, 77]}],
+          ['Dm', {root: 38, pad: [53, 57, 62], lead: [62, 65, 69, 74]}], ['E', {root: 40, pad: [56, 59, 64], lead: [64, 68, 71, 76]}]];
+const BAR8 = m => 'EFGHJ'.includes(m);
+const progIdx = n => n <= 2 ? 0 : n === 3 ? 1 : n === 4 ? 2 : 3;
+function chordAt(c) {
+  let i = 0; for (let k = c; k >= 0; k--) { const n = density(k); if (n) { i = progIdx(n); break; } } return {i, name: PROG[mode][i][0], ch: PROG[mode][i][1]}; }
+const CHORD_COL = ['--mi', '--do', '--du', '--or'];
+const MODES = {
+  A: {t: 'Chords · read left to right', d: 'Each column is one beat. Each row is a pitch: Sunday is highest, Saturday lowest. Brighter squares play louder and longer. Several active days in one week make a chord.', mul: 1, lg: ['silence','soft','medium','loud','loudest']},
+  B: {t: 'Melody · read top to bottom', d: 'Each week is one bar of 7 beats, Sunday first. Brighter squares play higher notes, empty days are rests, and a low thump marks every Sunday. The scale follows how busy the week is: 1–2 active days play A minor, 3–4 play D dorian, 5–7 play C major. The three scales share the same notes, so the changes sound like chords moving: Am, Dm, C.', mul: .5, lg: null},
+  C: {t: 'Drums · read left to right', d: 'Each row is one drum and each column one step. Brighter squares hit harder.', mul: .25, lg: ['silence','soft','medium','strong','accent']},
+  F: {t: '90s techno · read top to bottom', d: 'Each week is one bar in 4/4: seven days plus a drum fill. A kick on every beat, offbeat bass and open hi-hats, as in 90s eurodance. How busy the week is picks the chord: 1–2 active days play Am, 3 play Dm, 4 play F, 5–7 play G. Brighter days play higher supersaw stabs.', mul: .5, lg: ['rest','root','third','fifth','octave']},
+  G: {t: 'Drum & Bass · read top to bottom', d: 'Each week is one bar of a fast breakbeat: seven days plus a fill. Two-step kick and snare, 16th-note hi-hats and a deep sub bass. How busy the week is picks the chord: 1–2 active days play Am7, 3 play Dm7, 4 play Fmaj7, 5–7 play Em7. Brighter days play higher electric piano notes. The sub bass needs headphones or good speakers.', mul: .5, lg: ['rest','root','third','fifth','seventh']},
+  H: {t: 'Hip-hop · read top to bottom', d: 'Each week is one bar of a laid-back boom bap beat: seven days plus a fill. Dusty kick and snare, swung hi-hats and a round bass. How busy the week is picks the chord: 1–2 active days play Am9, 3 play Dm9, 4 play Fmaj7, 5–7 play E7. Brighter days play higher vibraphone notes.', mul: .5, swing: .18, lg: ['rest','root','third','fifth','top note']},
+  J: {t: 'Rap · read top to bottom', d: 'Each week is one bar of a half-time trap beat: seven days plus a fill. A kick and a heavy 808 bass, a clap on beat 3 and fast hi-hats that roll on the brightest days. How busy the week is picks the chord: 1–2 active days play Am, 3 play F, 4 play Dm, 5–7 play E. Brighter days play higher bell notes. The 808 needs headphones or good speakers.', mul: .5, lg: ['rest','root','third','fifth','octave']},
+  E: {t: '80s · read top to bottom', d: 'Each week is one bar in 4/4: seven days plus a drum fill. A drum machine with a big gated snare keeps the beat, and the bass pulses on every step. How busy the week is picks the chord: 1–2 active days play Am, 3 play F, 4 play C, 5–7 play G. Brighter days play higher notes on the lead synth, with echo.', mul: .5, lg: ['rest','root','third','fifth','octave']},
+  D: {t: 'Viking · read top to bottom', d: 'Read like Melody: each week is one bar of 7 beats, felt as 3 + 4. A frame drum hits beats 1 and 4, and the two brightest levels add a hit. A lyre plays each day as a note in D minor pentatonic. A low drone hums underneath and grows louder in busy weeks.', mul: .5, lg: ['rest','D4','F4','A4','C5']}
+};
 
-1. Enter a GitHub username and select **Load graph**.
-2. Choose a style.
-3. Choose how many times to play: **Once**, **3 times** or **Loop**.
-4. Select **Play**. A pink frame shows which square is playing.
+const $ = id => document.getElementById(id);
+const grid = $('grid');
+let data = [], orig = [], w0 = 0, nW = 0, todayIdx = 0, total = null, sample = false;
+let mode = 'E', sk = 'pd', skB = 'auto', span = 'all', user = 'hseeberg', loaded = false;
+const repsBy = {A: 0, B: 3, C: 0, D: 3, E: 3, F: 3, G: 3, H: 3, J: 3};
+const bpmBy = {A: 110, B: 110, C: 110, D: 110, E: 110, F: 140, G: 174, H: 88, J: 140};
+const thump = {m: 36, vol: 60, len: 1.4, sub: 60};
+let retryTarget = null, cellAt = [], mapEls = [], lit = [], ring = 0, lastCol = -1, trimA = 0, trimB = 0, shorten = true, dragging = null;
+let ctx, bus, dry, tube, gateIn, noiseBuf, echoIn, echoDl, timer = null, raf = 0, idx = 0, nextT = 0, endAt = Infinity, queue = [];
 
-## Styles
+/* ---------- dates & data ---------- */
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+const todayUTC = () => { const n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); };
+const sunday = t => t - new Date(t).getUTCDay() * DAY;
+const dt = (c, r) => new Date(w0 + (7 * c + (r || 0)) * DAY);
+const fmt = d => MON[d.getUTCMonth()] + ' ' + d.getUTCDate();
+const fut = (c, r) => 7 * c + r > todayIdx;
 
-All styles except Drums and Chords read each week from top to bottom. In most of them, the number of active days in a week picks the chord.
+function build(list) {
+  const today = todayUTC(), lvl = new Map();
+  let first = null;
+  total = 0;
+  for (const x of list) {
+    const t = parse(String(x.date)), l = Math.max(0, Math.min(4, Number(x.level) || 0));
+    if (t > today) continue;
+    lvl.set(t, l);
+    total += Number(x.count) || 0;
+    if (l && (first === null || t < first)) first = t;
+  }
+  if (span === 'last' || first === null) w0 = sunday(today - 364 * DAY);
+  else w0 = sunday(first);
+  todayIdx = Math.round((today - w0) / DAY);
+  nW = Math.floor(todayIdx / 7) + 1;
+  data = Array.from({length: 7}, (_, r) => Array.from({length: nW}, (_, c) => lvl.get(w0 + (7 * c + r) * DAY) || 0));
+  orig = data.map(r => r.slice());
+  trimA = 0; trimB = nW - 1;
+  fitToActivity();
+  return first !== null;
+}
+function sampleList() {
+  if (location.hash === '#sample-gaps') { const g = parse(GAPS_START); return GAPS.map(([c, r, l]) => ({date: new Date(g + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})); }
+  const s = parse(SAMPLE_START), out = [];
+  SAMPLE.forEach((row, r) => row.forEach((l, c) => out.push({date: new Date(s + (7 * c + r) * DAY).toISOString().slice(0, 10), count: l, level: l})));
+  return out;
+}
+/* ---------- field + status states ----------
+   idle    neutral border, blue focus ring
+   busy    "Loading…" on button, spinner in status
+   ok      green check in field, success line with profile link
+   invalid red border + aria-invalid, red message: only for errors the user can fix
+   warn    service problems are not the user's fault: field stays neutral, retry offered */
+const ICON = {
+  info: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4M8 4.6v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  ok: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.3l2 2 4-4.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8L15 14.2H1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6.3v3.6M8 12v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  err: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  load: '<span class="spin" aria-hidden="true"></span>'
+};
+const profile = u => ({a: 'https://github.com/' + encodeURIComponent(u), t: 'github.com/' + u});
+function setStatus(kind, parts) {
+  const el = $('status');
+  $('srMsg').textContent = '';
+  el.className = 'status st-' + kind;
+  el.innerHTML = ICON[kind] || '';
+  const p = document.createElement('p');
+  parts.forEach(x => {
+    if (typeof x === 'string') p.append(x);
+    else if (x.a) { const a = document.createElement('a'); a.href = x.a; a.textContent = x.t; a.target = '_blank'; a.rel = 'noopener'; p.append(a); }
+    else if (x.retry) { const b = document.createElement('button'); b.type = 'button'; b.className = 'retry'; b.textContent = 'Try again'; b.addEventListener('click', () => load(x.retry, x.demo)); p.append(' ', b); }
+  });
+  el.append(p);
+}
+function setField(state) {
+  const f = $('userForm'), inp = $('user');
+  f.classList.toggle('invalid', state === 'invalid');
+  f.classList.toggle('busy', state === 'busy');
+  if (state === 'invalid') inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid');
+  $('okMark').hidden = state !== 'ok';
+  f.classList.toggle('is-retry', state === 'retry');
+  $('loadBtn').textContent = state === 'busy' ? 'Loading…' : state === 'retry' ? 'Try again' : 'Load graph';
+  $('loadBtn').disabled = state === 'busy';
+}
+function fail(kind, u, demo) {
+  if (!loaded) { sample = true; build(sampleList()); render(); }
+  if (kind === 'notfound') {
+    setField('invalid');
+    setStatus('err', ['We can’t find a GitHub user called “' + u + '”. Check the spelling, or open ', profile(u), ' to see if the account exists.']);
+    $('user').focus();
+  } else {
+    setField('idle');
+    retryTarget = {u, demo};
+    setField('retry');
+    setStatus('warn', ['We can’t reach the contribution data right now. Your username is probably fine. Select Try again in a moment. ' + (loaded ? 'The last graph stays on screen.' : 'Here is a sample graph in the meantime.')]);
+  }
+}
+async function load(u, demo) {
+  stop();
+  if (!demo) $('user').value = u;
+  setField('busy');
+  setStatus('load', ['Loading the graph for ' + u + '…']);
+  let r, j;
+  try {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
+    r = await fetch(API + encodeURIComponent(u) + '?y=' + (span === 'last' ? 'last' : 'all'), {signal: ac.signal});
+    clearTimeout(to);
+    j = await r.json().catch(() => null);
+  } catch (e) { fail('service', u, demo); return; }
+  const notFound = r.status === 404 || (j && typeof j.error === 'string' && /not.?found|404|does not exist|no user/i.test(j.error));
+  if (notFound) { fail('notfound', u, demo); return; }
+  if (!r.ok || !j || !Array.isArray(j.contributions)) { fail('service', u, demo); return; }
+  user = u; loaded = true; sample = false;
+  const any = build(j.contributions);
+  render();
+  setField(demo || !any ? 'idle' : 'ok');
+  if (!any) setStatus('warn', [profile(u), ' has no public contributions ' + (span === 'last' ? 'in the last 12 months' : 'yet') + '. If this is your account, you can show private contributions in your GitHub profile settings.']);
+  else if (demo) setStatus('info', ['You are hearing a demo graph from ', profile(u), '. Enter your username to hear your own.']);
+  else { $('status').className = 'status'; $('status').innerHTML = ''; $('srMsg').textContent = 'Showing the graph for ' + u + '.'; }
+}
 
-| Style | Tempo | What you hear |
-|---|---|---|
-| **80s** | 110 BPM | Drum machine with gated snare, pulsing bass, lead synth with echo. Chords: Am, F, C, G. |
-| **90s Techno** | 140 BPM | Kick on every beat, offbeat bass and open hi-hats, supersaw stabs. Chords: Am, Dm, F, G. |
-| **Drum & Bass** | 174 BPM | Fast breakbeat, deep sub bass, electric piano. Chords: Am7, Dm7, Fmaj7, Em7. |
-| **Hip-hop** | 88 BPM | Swung boom bap beat, round bass, vibraphone. Chords: Am9, Dm9, Fmaj7, E7. |
-| **Rap** | 140 BPM | Half-time trap beat, heavy 808 bass, rolling hi-hats, bell melody. Chords: Am, F, Dm, E. |
-| **Viking** | 110 BPM | Frame drum, lyre and a low drone in D minor pentatonic. |
-| **Drums** | 110 BPM | Read left to right. Each row is one drum. |
-| **Melody** | 110 BPM | Each week is one 7-beat bar. Week activity picks the scale. A Sunday thump marks each bar. |
-| **Chords** | 110 BPM | Read left to right. Each column is one chord. |
+/* ---------- view ---------- */
+const stepDur = () => 60 / bpmBy[mode] * MODES[mode].mul;
+const density = c => { let n = 0; for (let r = 0; r < 7; r++) if (data[r][c]) n++; return n; };
+function autoKey(c) {
+  for (let k = c; k >= 0; k--) { const n = density(k); if (n) return n <= 2 ? 'pm' : n <= 4 ? 'dor' : 'pd'; }
+  return 'pm';
+}
+const keyB = c => skB === 'auto' ? autoKey(c) : skB;
+function chordKey(c) { for (let k = c; k >= 0; k--) { const n = density(k); if (n) return chordOf(n); } return 'Am'; }
+const scB = c => SCALES[keyB(c)];
+function skipSet() {
+  const S = new Set();
+  if (!shorten) return S;
+  let run = [];
+  const flush = () => { if (run.length > 1) run.slice(1).forEach(c => S.add(c)); run = []; };
+  for (let c = trimA; c <= trimB; c++) { if (density(c) === 0) run.push(c); else flush(); }
+  flush();
+  return S;
+}
+function steps() {
+  const s = [], skip = skipSet();
+  for (let c = trimA; c <= trimB; c++) {
+    if (skip.has(c)) continue;
+    if (mode === 'B' || mode === 'D') { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); }
+    else if (BAR8(mode)) { for (let r = 0; r < 7; r++) if (!fut(c, r)) s.push({c, r}); if (!fut(c, 6)) s.push({c, r: 7}); }
+    else s.push({c});
+  }
+  return s;
+}
+function mapLabel(r) {
+  if (mode === 'A') return nn(SCALES[sk].rows[r]);
+  if (mode === 'B') return 'beat ' + (r + 1);
+  if (mode === 'D') return 'beat ' + (r + 1) + (r === 0 || r === 3 ? ' · drum' : '');
+  if (mode === 'E') return 'beat ' + (r + 1) + (r === 0 || r === 4 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'F') return 'beat ' + (r + 1) + (r === 2 || r === 6 ? ' · kick + clap' : r % 2 ? ' · bass' : ' · kick');
+  if (mode === 'G') return 'beat ' + (r + 1) + (r === 0 || r === 5 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'H') return 'beat ' + (r + 1) + (r === 0 || r === 3 || r === 5 ? ' · kick' : r === 2 || r === 6 ? ' · snare' : '');
+  if (mode === 'J') return 'beat ' + (r + 1) + (r === 0 || r === 5 ? ' · kick + 808' : r === 3 ? ' · 808' : r === 4 ? ' · clap' : '');
+  return DRUMS[r];
+}
+function render() {
+  grid.style.setProperty('--n', nW);
+  grid.classList.toggle('wide', nW > 26);
+  let h = '<div class="hd"></div>';
+  const starts = [];
+  for (let c = 1; c < nW; c++) if (dt(c).getUTCMonth() !== dt(c - 1).getUTCMonth()) starts.push(c);
+  const lab = new Set(starts);
+  if (!starts.length || starts[0] >= 3) lab.add(0);
+  const firstLab = Math.min(...lab);
+  for (let c = 0; c < nW; c++) {
+    const d = dt(c);
+    h += '<div class="hd">' + (lab.has(c) ? MON[d.getUTCMonth()] + (d.getUTCMonth() === 0 || c === firstLab ? ' ’' + String(d.getUTCFullYear()).slice(2) : '') : '') + '</div>';
+  }
+  h += '<div class="hd"></div>';
+  for (let r = 0; r < 7; r++) {
+    h += '<div class="lab" title="' + DAYS[r] + '">' + DS[r] + '</div>';
+    for (let c = 0; c < nW; c++) {
+      const f = fut(c, r);
+      h += '<span class="cell l' + data[r][c] + (f ? ' fut' : '') + '" data-r="' + r + '" data-c="' + c + '" title="' + DAYS[r] + ' ' + fmt(dt(c, r)) + '"></span>';
+    }
+    h += '<div class="map" id="map' + r + '">' + mapLabel(r) + '</div>';
+  }
+  if (mode === 'B') {
+    h += '<div class="lab"></div>';
+    for (let c = 0; c < nW; c++) { const k = keyB(c); h += '<div class="sc s-' + k + '" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + SCALES[k].s + '"></div>'; }
+    h += '<div class="map">scale</div>';
+  }
+  if (BAR8(mode)) {
+    h += '<div class="lab"></div>';
+    for (let c = 0; c < nW; c++) { const k = chordAt(c); h += '<div class="sc" style="background:var(' + CHORD_COL[k.i] + ')" id="sc' + c + '" title="' + fmt(dt(c)) + ': ' + k.name + '"></div>'; }
+    h += '<div class="map">chord</div>';
+  }
+  h += '<div class="lab"></div><div class="trim" id="trim" style="grid-column:2 / span ' + nW + '"><div class="tsel" id="tsel"></div>'
+    + '<button class="th" id="thA" type="button" role="slider" aria-label="First week to play" aria-valuemin="0"></button>'
+    + '<button class="th" id="thB" type="button" role="slider" aria-label="Last week to play" aria-valuemin="0"></button></div><div class="map">play range</div>';
+  grid.innerHTML = h;
+  cellAt = Array.from({length: 7}, () => []);
+  grid.querySelectorAll('.cell').forEach(el => { cellAt[+el.dataset.r][+el.dataset.c] = el; });
+  mapEls = DS.map((_, r) => $('map' + r));
+  lit = [];
+  fillScale();
+  applyTrim();
+  const sc = $('scroller'); sc.scrollLeft = sc.scrollWidth;
+}
+function fillScale() {
+  document.querySelectorAll('#reps button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === repsBy[mode]));
+}
+function applyTrim() {
+  const skip = skipSet(), pct = v => (v / nW * 100) + '%';
+  for (let c = 0; c < nW; c++) {
+    const out = c < trimA || c > trimB, gap = skip.has(c);
+    for (let r = 0; r < 7; r++) { const el = cellAt[r][c]; if (el) { el.classList.toggle('out', out); el.classList.toggle('gap', gap); } }
+    const sb = $('sc' + c); if (sb) { sb.classList.toggle('out', out); sb.classList.toggle('gap', gap); }
+  }
+  const sel = $('tsel'); sel.style.left = pct(trimA); sel.style.width = pct(trimB - trimA + 1);
+  [['thA', trimA, trimA], ['thB', trimB, trimB + 1]].forEach(([id, v, x]) => {
+    const el = $(id);
+    el.style.left = pct(x);
+    el.setAttribute('aria-valuemax', nW - 1);
+    el.setAttribute('aria-valuenow', v);
+    el.setAttribute('aria-valuetext', 'Week of ' + fmt(dt(v)));
+  });
+  const wk = trimB - trimA + 1, played = wk - skip.size;
+  const end = Math.min(7 * trimB + 6, todayIdx);
+  let fa = -1, fb = -1;
+  for (let c = 0; c < nW; c++) if (density(c)) { if (fa < 0) fa = c; fb = c; }
+  $('fitAct').checked = fa >= 0 && trimA === fa && trimB === fb;
+  const d1 = dt(trimA), d2 = new Date(w0 + end * DAY), y1 = d1.getUTCFullYear(), y2 = d2.getUTCFullYear();
+  $('trimInfo').textContent = 'Playing ' + fmt(d1) + (y1 !== y2 ? ', ' + y1 : '') + ' – ' + fmt(d2) + ', ' + y2 + ' · ' + played + ' of ' + nW + ' weeks' + (skip.size ? ' · ' + skip.size + ' silent weeks skipped' : '');
+  info();
+}
+function moveTrim(w, c) {
+  c = Math.max(0, Math.min(nW - 1, c));
+  if (w === 'A') trimA = Math.min(c, trimB); else trimB = Math.max(c, trimA);
+  applyTrim();
+}
+function info() {
+  let act = 0;
+  for (let r = 0; r < 7; r++) for (let c = trimA; c <= trimB; c++) if (data[r][c]) act++;
+  const n = steps().length, R = repsBy[mode], sec = Math.round(n * stepDur());
+  const len = s => s >= 60 ? Math.floor(s / 60) + ' min ' + (s % 60) + ' s' : s + ' s';
+  $('stats').innerHTML = (sample ? 'Sample graph · ' : '') + (total !== null && !sample ? '<b>' + total + '</b> contributions · ' : '') + '<b>' + act + '</b> active days · <b>' + new Set(steps().map(x => x.c)).size + '</b> weeks · <b>' + len(sec) + '</b> per round' + (R ? ' · <b>' + len(sec * R) + '</b> total' : '');
+  const M = MODES[mode];
+  $('mTitle').textContent = M.t;
+  $('mDesc').textContent = M.d;
+  document.querySelectorAll('.mode').forEach(el => el.setAttribute('aria-pressed', el.dataset.m === mode));
+  $('modeSel').value = mode;
+  $('tempoOut').textContent = bpmBy[mode] + ' BPM';
+  $('tempo').value = bpmBy[mode];
+  $('ctlPanel').hidden = mode !== 'B';
+  $('lowRow').classList.toggle('solo', mode !== 'B');
+  $('tVolOut').textContent = thump.vol ? thump.vol + ' %' : 'off';
+  $('tLenOut').textContent = thump.len.toFixed(1) + ' s';
+  $('tSubOut').textContent = thump.sub + ' %';
+}
 
-Each style keeps its own tempo. Change it with the **Tempo** slider.
+/* ---------- audio ---------- */
+function initAudio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const comp = ctx.createDynamicsCompressor(); comp.connect(ctx.destination);
+  const master = ctx.createGain(); master.gain.value = .8; master.connect(comp);
+  bus = ctx.createGain(); bus.connect(master);
+  dry = ctx.createGain(); dry.connect(master);
+  /* saturation that makes the 808 bass audible on small speakers */
+  tube = ctx.createWaveShaper();
+  const tc = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) { const x = i / 1023 * 2 - 1; tc[i] = Math.tanh(2.5 * x) / Math.tanh(2.5); }
+  tube.curve = tc; tube.connect(dry);
+  /* gated reverb for the 80s snare: dense short room that stops abruptly */
+  const glen = Math.round(ctx.sampleRate * .3), gir = ctx.createBuffer(2, glen, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = gir.getChannelData(ch); for (let i = 0; i < glen; i++) d[i] = (Math.random() * 2 - 1) * (i < glen * .88 ? 1 - .4 * i / glen : (glen - i) / (glen * .12) * .65); }
+  gateIn = ctx.createGain();
+  const gcv = ctx.createConvolver(), glp = filt('lowpass', 4200), gout = ctx.createGain();
+  gcv.buffer = gir; gout.gain.value = .35;
+  gateIn.connect(gcv); gcv.connect(glp); glp.connect(gout); gout.connect(master);
+  const len = ctx.sampleRate * 2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3; }
+  const cv = ctx.createConvolver(), wet = ctx.createGain();
+  cv.buffer = ir; wet.gain.value = .22;
+  bus.connect(cv); cv.connect(wet); wet.connect(master);
+  echoIn = ctx.createGain();
+  echoDl = ctx.createDelay(2);
+  const fb = ctx.createGain(), elp = filt('lowpass', 2500), ewet = ctx.createGain();
+  fb.gain.value = .38; ewet.gain.value = .45;
+  echoIn.connect(echoDl); echoDl.connect(elp); elp.connect(fb); fb.connect(echoDl); elp.connect(ewet); ewet.connect(bus);
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+}
+function env(t, amp, a, dec, out) {
+  const g = ctx.createGain();
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(amp, t + a);
+  g.gain.exponentialRampToValueAtTime(.0001, t + a + dec);
+  g.connect(out || bus);
+  return g;
+}
+function osc(type, f, t, end) { const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(end); return o; }
+function noise(t, end) { const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true; s.start(t); s.stop(end); return s; }
+function filt(type, f) { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; return b; }
+function bell(t, m, amp, br, dur) {
+  const g = env(t, amp, .005, dur);
+  [[1, 1], [2, .35 * br], [3, .12 * br]].forEach(([k, a]) => {
+    const o = osc('sine', hz(m) * k, t, t + dur + .1), og = ctx.createGain();
+    og.gain.value = a; o.connect(og); og.connect(g);
+  });
+}
+const ksCache = {};
+function ksBuf(m) {
+  if (ksCache[m]) return ksCache[m];
+  const sr = ctx.sampleRate, N = Math.round(sr / hz(m)), len = Math.round(sr * 2.4);
+  const b = ctx.createBuffer(1, len, sr), d = b.getChannelData(0), rb = new Float32Array(N);
+  let prev = 0;
+  for (let i = 0; i < N; i++) { const v = Math.random() * 2 - 1; rb[i] = (v + prev) / 2; prev = v; }
+  for (let i = 0, p = 0; i < len; i++) { const nx = (p + 1) % N, v = rb[p]; d[i] = v; rb[p] = .997 * .5 * (v + rb[nx]); p = nx; }
+  return (ksCache[m] = b);
+}
+function lyre(t, m, amp) {
+  const s = ctx.createBufferSource(), g = ctx.createGain(), lp = filt('lowpass', 3200);
+  s.buffer = ksBuf(m); g.gain.value = amp;
+  s.connect(lp); lp.connect(g); g.connect(bus); s.start(t);
+}
+function tromm(t, amp, deepHit) {
+  const f0 = deepHit ? 60 : 95, o = osc('sine', f0 * 1.7, t, t + 1);
+  o.frequency.exponentialRampToValueAtTime(f0, t + .08);
+  o.connect(env(t, amp, .003, deepHit ? .8 : .4));
+  const lp = filt('lowpass', deepHit ? 900 : 1800);
+  noise(t, t + .15).connect(lp);
+  lp.connect(env(t, amp * .35, .001, .08));
+}
+function drone(t, bar, dens) {
+  const g = ctx.createGain(), amp = .05 + .016 * dens, lp = filt('lowpass', 520);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .3);
+  g.gain.setValueAtTime(amp, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + .8);
+  lp.connect(g); g.connect(bus);
+  [[38, -4], [38, 4], [45, 0]].forEach(([m, cents]) => { const o = osc('sawtooth', hz(m), t, t + bar + .9); o.detune.value = cents; o.connect(lp); });
+}
+function synBass(t, m, dur) {
+  const lp = filt('lowpass', 1800);
+  lp.Q.value = 5;
+  lp.frequency.setValueAtTime(1800, t);
+  lp.frequency.exponentialRampToValueAtTime(260, t + dur);
+  lp.connect(env(t, .2, .004, dur, dry));
+  osc('sawtooth', hz(m), t, t + dur + .05).connect(lp);
+}
+function pad(t, bar, notes) {
+  const g = ctx.createGain(), lp = filt('lowpass', 1400);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(.045, t + .5);
+  g.gain.setValueAtTime(.045, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + .7);
+  lp.connect(g); g.connect(bus);
+  notes.forEach(m => [-9, 9].forEach(cents => { const o = osc('sawtooth', hz(m), t, t + bar + .8); o.detune.value = cents; o.connect(lp); }));
+}
+function lead(t, m, amp) {
+  const g = ctx.createGain(), lp = filt('lowpass', 3400);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(amp, t + .01);
+  g.gain.exponentialRampToValueAtTime(.0001, t + .45);
+  lp.connect(g); g.connect(bus); g.connect(echoIn);
+  [['square', 0], ['sawtooth', 8]].forEach(([ty, d]) => { const o = osc(ty, hz(m), t, t + .5); o.detune.value = d; o.connect(lp); });
+}
+/* 80s snare: tuned drum body + short filtered noise, sent to the gated room (no long hiss) */
+function snare80(t, amp) {
+  const body = ctx.createGain();
+  body.connect(dry); body.connect(gateIn);
+  [[185, 1], [330, .5]].forEach(([f, a]) => {
+    const o = osc('triangle', f * 1.4, t, t + .2);
+    o.frequency.exponentialRampToValueAtTime(f, t + .03);
+    o.connect(env(t, amp * a * .7, .002, .12, body));
+  });
+  const hp = filt('highpass', 1800), bp = filt('bandpass', 4500);
+  bp.Q.value = .7;
+  noise(t, t + .2).connect(hp); hp.connect(bp);
+  bp.connect(env(t, amp * .4, .002, .13, body));
+}
+/* 808-style closed hat: six detuned square waves instead of white noise */
+function hat80(t, amp) {
+  const bp = filt('bandpass', 10000), hp = filt('highpass', 7000);
+  bp.Q.value = 1.2;
+  [205.3, 304.4, 369.6, 522.7, 540, 800].forEach(f => osc('square', f, t, t + .06).connect(bp));
+  bp.connect(hp);
+  hp.connect(env(t, amp, .001, .04, dry));
+}
+/* ---------- 90s techno ---------- */
+function kickHard(t, amp) {
+  const o = osc('sine', 170, t, t + .4);
+  o.frequency.exponentialRampToValueAtTime(48, t + .09);
+  o.connect(env(t, amp, .002, .32, dry));
+  const hp = filt('highpass', 2500);
+  noise(t, t + .02).connect(hp);
+  hp.connect(env(t, amp * .25, .001, .012, dry));
+}
+function openHat(t, amp) {
+  const bp = filt('bandpass', 9000), hp = filt('highpass', 6500);
+  bp.Q.value = 1;
+  [205.3, 304.4, 369.6, 522.7, 540, 800].forEach(f => osc('square', f, t, t + .25).connect(bp));
+  bp.connect(hp);
+  hp.connect(env(t, amp, .002, .17, dry));
+}
+function supersaw(t, m, amp, dur) {
+  const lp = filt('lowpass', 4200), g = env(t, amp, .004, dur);
+  g.connect(echoIn);
+  lp.connect(g);
+  [-18, -8, 0, 8, 18].forEach(cents => { const o = osc('sawtooth', hz(m), t, t + dur + .1); o.detune.value = cents; o.connect(lp); });
+}
+function schedTechno(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r % 2 === 0) kickHard(t, .8);
+  if (s.r === 2 || s.r === 6) drum('clap', t, .45);
+  if (s.r % 2) { openHat(t, .06); synBass(t, ch.root + 12, st * .8); }
+  else hat80(t, .035);
+  if (s.r === 7 && density(s.c) >= 3) [0, .25, .5, .75].forEach((d, i) => drum('snare', t + d * st, .18 + .06 * i));
+  if (l) { supersaw(t, ch.lead[l - 1], .05 + .015 * l, .22); supersaw(t, ch.lead[l - 1] - 12, .03, .22); }
+}
+/* ---------- drum & bass ---------- */
+function snareDnb(t, amp) {
+  const o = osc('triangle', 240, t, t + .15);
+  o.frequency.exponentialRampToValueAtTime(190, t + .03);
+  o.connect(env(t, amp * .6, .001, .09));
+  const hp = filt('highpass', 1800);
+  noise(t, t + .2).connect(hp);
+  hp.connect(env(t, amp * .55, .001, .13));
+}
+function sub(t, m, dur, amp) {
+  const g = ctx.createGain();
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .02);
+  g.gain.setValueAtTime(amp, t + dur * .8);
+  g.gain.linearRampToValueAtTime(.0001, t + dur);
+  g.connect(dry);
+  osc('sine', hz(m), t, t + dur + .05).connect(g);
+  const h = ctx.createGain(); h.gain.value = .25; h.connect(g);
+  osc('triangle', hz(m + 12), t, t + dur + .05).connect(h);
+}
+function padSoft(t, bar, notes) {
+  const g = ctx.createGain(), lp = filt('lowpass', 950);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(.05, t + .6);
+  g.gain.setValueAtTime(.05, t + bar);
+  g.gain.exponentialRampToValueAtTime(.0001, t + bar + 1);
+  lp.connect(g); g.connect(bus);
+  notes.forEach(m => [['triangle', -6], ['sine', 6]].forEach(([ty, c]) => { const o = osc(ty, hz(m), t, t + bar + 1.1); o.detune.value = c; o.connect(lp); }));
+}
+function rhodes(t, m, amp) {
+  const f = hz(m), car = osc('sine', f, t, t + 1.6), mod = osc('sine', f, t, t + 1.6), mg = ctx.createGain();
+  mg.gain.value = .0001;
+  mg.gain.setValueAtTime(f * 2.2, t);
+  mg.gain.exponentialRampToValueAtTime(f * .05, t + .5);
+  mod.connect(mg); mg.connect(car.frequency);
+  const g = env(t, amp, .003, 1.4);
+  g.connect(echoIn);
+  car.connect(g);
+}
+function schedDnb(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); sub(t, ch.root, st * 4.8, .38); }
+  if (s.r === 5) sub(t, ch.root, st * 2.8, .32);
+  if (s.r === 0) kickHard(t, .85);
+  if (s.r === 5) kickHard(t, .7);
+  if (s.r === 2 || s.r === 6) snareDnb(t, .6);
+  if (s.r === 3 || s.r === 7) snareDnb(t + st / 2, .14);
+  hat80(t, .05); hat80(t + st / 2, .03);
+  if (l) rhodes(t, ch.lead[l - 1], .09 + .025 * l);
+}
+/* ---------- hip-hop (boom bap) ---------- */
+function kickBoom(t, amp) {
+  const o = osc('sine', 120, t, t + .6);
+  o.frequency.exponentialRampToValueAtTime(42, t + .12);
+  const lp = filt('lowpass', 900);
+  o.connect(lp); lp.connect(env(t, amp, .003, .5, dry));
+}
+function snareBoom(t, amp) {
+  snareDnb(t, amp * .8);
+  drum('clap', t + .004, amp * .35);
+}
+function bassRound(t, m, dur, amp) {
+  const lp = filt('lowpass', 600);
+  lp.connect(env(t, amp, .01, dur, dry));
+  osc('triangle', hz(m), t, t + dur + .05).connect(lp);
+  osc('sine', hz(m), t, t + dur + .05).connect(lp);
+}
+function vibes(t, m, amp) {
+  const g = env(t, amp, .004, 1.1);
+  g.connect(echoIn);
+  const trem = ctx.createGain(), lfo = osc('sine', 5.5, t, t + 1.3), depth = ctx.createGain();
+  trem.gain.value = .75; depth.gain.value = .25;
+  lfo.connect(depth); depth.connect(trem.gain);
+  trem.connect(g);
+  osc('sine', hz(m), t, t + 1.3).connect(trem);
+  const h = ctx.createGain(); h.gain.value = .12; h.connect(trem);
+  osc('sine', hz(m) * 4, t, t + .4).connect(h);
+}
+function schedHiphop(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); kickBoom(t, .9); bassRound(t, ch.root + 12, st * 2.6, .4); }
+  if (s.r === 3) { kickBoom(t, .55); bassRound(t, ch.root + 12, st * 1.6, .3); }
+  if (s.r === 5) { kickBoom(t, .75); bassRound(t, ch.root + 24, st * 1.6, .28); }
+  if (s.r === 2 || s.r === 6) snareBoom(t, .7);
+  if (s.r === 7 && density(s.c) >= 3) snareDnb(t + st / 2, .15);
+  hat80(t, s.r % 2 ? .025 : .045);
+  if (l) vibes(t, ch.lead[l - 1], .07 + .02 * l);
+}
+/* ---------- rap (trap) ---------- */
+function bass808(t, m, dur, amp, from) {
+  const o = osc('sine', hz(from == null ? m : from), t, t + dur + .05), g = ctx.createGain();
+  if (from != null) o.frequency.exponentialRampToValueAtTime(hz(m), t + .12);
+  g.gain.value = .0001;
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.linearRampToValueAtTime(amp, t + .005);
+  g.gain.setValueAtTime(amp * .9, t + dur * .6);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(tube);
+}
+function schedRap(s, t) {
+  const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch, st = stepDur();
+  if (s.r === 0) { padSoft(t, st * 8, ch.pad); kickHard(t, .8); bass808(t, ch.root, st * 2.8, .5); }
+  if (s.r === 3) bass808(t, ch.root, st * 1.2, .4);
+  if (s.r === 5) { kickHard(t, .6); bass808(t, ch.root, st * 2.6, .45, ch.root + 12); }
+  if (s.r === 4) snareBoom(t, .8);
+  const roll = s.r === 7 && density(s.c) >= 3 ? 4 : l === 4 ? 4 : l === 3 ? 3 : 2;
+  for (let i = 0; i < roll; i++) hat80(t + i * st / roll, i ? .03 : .05);
+  if (l) bell(t, ch.lead[l - 1], .06 + .02 * l, .4, .9);
+}
+function deep(t) {
+  if (!thump.vol) return;
+  const f = hz(thump.m), lp = filt('lowpass', 320), L = thump.len;
+  lp.connect(env(t, thump.vol / 100 * .55, .004, L));
+  const o = osc('sine', f * 2, t, t + L + .2);
+  o.frequency.exponentialRampToValueAtTime(f, t + .07);
+  o.connect(lp);
+  [['sine', f / 2, thump.sub / 100], ['triangle', f, .25]].forEach(([ty, fr, a]) => {
+    if (!a) return;
+    const x = osc(ty, fr, t, t + L + .2), g = ctx.createGain();
+    g.gain.value = a; x.connect(g); g.connect(lp);
+  });
+}
+function drum(k, t, amp) {
+  if (k === 'kick') { const o = osc('sine', 155, t, t + .45); o.frequency.exponentialRampToValueAtTime(45, t + .15); o.connect(env(t, amp, .003, .4)); }
+  else if (k === 'tomH' || k === 'tomL') { const b = k === 'tomH' ? 160 : 90, o = osc('sine', b + 60, t, t + .4); o.frequency.exponentialRampToValueAtTime(b, t + .2); o.connect(env(t, amp * .8, .003, .35)); }
+  else if (k === 'snare') { const f = filt('bandpass', 3000); noise(t, t + .25).connect(f); f.connect(env(t, amp * .7, .002, .2)); osc('triangle', 190, t, t + .15).connect(env(t, amp * .4, .002, .1)); }
+  else if (k === 'clap') { const f = filt('bandpass', 1500); noise(t, t + .3).connect(f); [0, .012, .024].forEach((d, i) => f.connect(env(t + d, amp * .6, .001, i === 2 ? .2 : .01))); }
+  else if (k === 'hat') { const f = filt('highpass', 7000); noise(t, t + .08).connect(f); f.connect(env(t, amp * .5, .001, .05)); }
+  else { const f = filt('highpass', 5000); noise(t, t + .18).connect(f); f.connect(env(t, amp * .4, .02, .12)); }
+}
+function sched(s, t) {
+  if (mode === 'F') { schedTechno(s, t); return; }
+  if (mode === 'G') { schedDnb(s, t); return; }
+  if (mode === 'H') { schedHiphop(s, t); return; }
+  if (mode === 'J') { schedRap(s, t); return; }
+  if (mode === 'E') {
+    const l = s.r < 7 ? data[s.r][s.c] : 0, ch = chordAt(s.c).ch;
+    if (s.r === 0) pad(t, stepDur() * 8, ch.pad);
+    if (s.r === 0 || s.r === 4) drum('kick', t, .75);
+    if (s.r === 2 || s.r === 6) snare80(t, .55);
+    if (s.r === 7 && density(s.c) >= 3) { drum('tomH', t, .3); drum('tomL', t + stepDur() / 2, .3); }
+    hat80(t, s.r % 2 ? .05 : .08);
+    synBass(t, ch.root + (s.r % 2 ? 12 : 0), stepDur() * .9);
+    if (l) lead(t, ch.lead[l - 1], .07 + .025 * l);
+    return;
+  }
+  if (mode === 'D') {
+    const l = data[s.r][s.c];
+    if (s.r === 0) { drone(t, stepDur() * 7, density(s.c)); tromm(t, .55, true); }
+    if (s.r === 3) tromm(t, .3, false);
+    if (l) { lyre(t, D_LV[l - 1], .3 + .08 * l); if (l >= 3 && s.r !== 0 && s.r !== 3) tromm(t, .2 + .1 * l, false); }
+    return;
+  }
+  if (mode === 'B') {
+    const l = data[s.r][s.c], sc = scB(s.c);
+    if (s.r === 0) deep(t);
+    if (l) bell(t, sc.lv[l - 1], .22, .8, .5);
+    return;
+  }
+  const sc = SCALES[sk];
+  let sum = 0;
+  for (let r = 0; r < 7; r++) {
+    const l = data[r][s.c];
+    if (!l) continue;
+    sum += l;
+    if (mode === 'A') bell(t, sc.rows[r], .05 + .04 * l, .5 + .2 * l, .6 + .4 * l);
+    else drum(DK[r], t, .3 + .15 * l);
+  }
+  if (mode === 'A' && sum) bell(t, sc.rows[6] - 24, Math.min(.2, .05 + .012 * sum), .2, 1.2);
+}
+function tick() {
+  const S = steps();
+  if (!S.length) { stop(); return; }
+  while (nextT < ctx.currentTime + .12) {
+    if (idx >= S.length) {
+      ring++;
+      const R = repsBy[mode];
+      if (!R || ring < R) idx = 0;
+      else { clearInterval(timer); timer = null; endAt = nextT; return; }
+    }
+    const sw = MODES[mode].swing && S[idx].r % 2 ? stepDur() * MODES[mode].swing : 0;
+    sched(S[idx], nextT + sw);
+    queue.push({t: nextT + sw, s: S[idx], i: idx, n: S.length, ring, R: repsBy[mode]});
+    nextT += stepDur();
+    idx++;
+  }
+}
 
-## Choose what plays
+/* ---------- playhead ---------- */
+function unlight() { lit.forEach(el => el.classList.remove('pc', 'hit', 'on')); lit = []; }
+function light(el, hit) { if (!el) return; el.classList.add('pc'); if (hit) el.classList.add('hit'); lit.push(el); }
+function mark(r) { mapEls[r].classList.add('on'); lit.push(mapEls[r]); }
+function follow(c) {
+  if (c === lastCol || nW <= 26) return;
+  lastCol = c;
+  const sc = $('scroller'), el = cellAt[0][c];
+  if (el) sc.scrollLeft = el.offsetLeft - sc.clientWidth / 2;
+}
+function show(q) {
+  unlight();
+  const s = q.s;
+  follow(s.c);
+  if (BAR8(mode) || mode === 'D' || mode === 'B') {
+    if (s.r < 7) { light(cellAt[s.r][s.c], data[s.r][s.c] > 0); mark(s.r); }
+    if (mode !== 'D') light($('sc' + s.c), false);
+  } else {
+    for (let r = 0; r < 7; r++) { const l = data[r][s.c]; light(cellAt[r][s.c], l > 0); if (l) mark(r); }
+  }
+}
+function frame() {
+  const now = ctx.currentTime;
+  let cur = null;
+  while (queue.length && queue[0].t <= now) cur = queue.shift();
+  if (cur) show(cur);
+  if (!timer && now > endAt + stepDur()) { stop(); return; }
+  raf = requestAnimationFrame(frame);
+}
+function setPlayBtn(on) {
+  $('play').innerHTML = on
+    ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h10v10H3z"/></svg><span>Stop</span>'
+    : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg><span>Play</span>';
+}
+function start() {
+  initAudio();
+  ctx.resume().catch(() => {});
+  idx = 0; ring = 0; queue = []; endAt = Infinity; lastCol = -1;
+  nextT = ctx.currentTime + .08;
+  clearInterval(timer);
+  if (echoDl) echoDl.delayTime.value = Math.min(1.9, stepDur() * 1.5);
+  timer = setInterval(tick, 25);
+  tick();
+  cancelAnimationFrame(raf);
+  if (timer) { raf = requestAnimationFrame(frame); setPlayBtn(true); }
+}
+function stop() {
+  clearInterval(timer); timer = null; queue = [];
+  cancelAnimationFrame(raf); raf = 0;
+  unlight();
+  setPlayBtn(false);
+}
+const playing = () => raf !== 0;
+function restartIfPlaying() { if (playing()) start(); }
 
-- **Play range:** drag the two handles under the graph to choose the first and last week. Arrow keys, Page Up/Down and Home/End also work.
-- **Skip long silences:** a run of empty weeks becomes one bar of rest.
-- **Trim empty start and end:** on by default. Playback starts at the first active week and ends at the last one. Turn it off to play every week.
-- **Time range:** since the first contribution, or the last 12 months.
+/* ---------- events ---------- */
+const validUser = u => /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(u);
+$('userForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if ($('userForm').classList.contains('is-retry') && retryTarget && $('user').value.trim() === (retryTarget.demo ? '' : retryTarget.u)) { load(retryTarget.u, retryTarget.demo); return; }
+  const u = $('user').value.trim().replace(/^@/, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/[/?#].*$/, '');
+  if (!u) { setField('invalid'); setStatus('err', ['Enter a GitHub username, for example octocat.']); $('user').focus(); return; }
+  if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” can’t be a GitHub username. Use only letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
+  if (location.hash !== '#' + u) location.hash = u; else load(u);
+});
+$('user').addEventListener('input', () => { const f = $('userForm'); if (f.classList.contains('invalid') || f.classList.contains('is-retry') || !$('okMark').hidden) setField('idle'); });
+window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
+const colFromX = x => { const r = $('trim').getBoundingClientRect(); return Math.floor((x - r.left) / r.width * nW); };
+grid.addEventListener('pointerdown', e => {
+  const tr = e.target.closest('.trim');
+  if (!tr) return;
+  e.preventDefault();
+  const th = e.target.closest('.th'), c = colFromX(e.clientX);
+  dragging = th ? (th.id === 'thA' ? 'A' : 'B') : (Math.abs(c - trimA) <= Math.abs(c - trimB) ? 'A' : 'B');
+  if (!th) moveTrim(dragging, c);
+  (th || tr).focus?.();
+  tr.setPointerCapture(e.pointerId);
+});
+grid.addEventListener('pointermove', e => { if (dragging) moveTrim(dragging, colFromX(e.clientX)); });
+const endDrag = () => { if (dragging) { dragging = null; restartIfPlaying(); } };
+grid.addEventListener('pointerup', endDrag);
+grid.addEventListener('pointercancel', endDrag);
+grid.addEventListener('keydown', e => {
+  const th = e.target.closest('.th');
+  if (!th) return;
+  const w = th.id === 'thA' ? 'A' : 'B', k = e.key;
+  let v = w === 'A' ? trimA : trimB;
+  if (k === 'ArrowLeft' || k === 'ArrowDown') v--; else if (k === 'ArrowRight' || k === 'ArrowUp') v++;
+  else if (k === 'PageDown') v -= 4; else if (k === 'PageUp') v += 4;
+  else if (k === 'Home') v = 0; else if (k === 'End') v = nW - 1; else return;
+  e.preventDefault();
+  moveTrim(w, v);
+});
+$('shorten').addEventListener('change', e => { shorten = e.target.checked; applyTrim(); restartIfPlaying(); });
+function fitToActivity() {
+  let a = -1, b = -1;
+  for (let c = 0; c < nW; c++) if (density(c)) { if (a < 0) a = c; b = c; }
+  if (a >= 0) { trimA = a; trimB = b; }
+}
+$('fitAct').addEventListener('change', e => {
+  if (e.target.checked) fitToActivity(); else { trimA = 0; trimB = nW - 1; }
+  applyTrim(); restartIfPlaying();
+});
+$('privacyOpen').addEventListener('click', () => { const d = $('privacy'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); });
+$('privacy').addEventListener('click', e => { if (e.target === $('privacy')) $('privacy').close(); });
+function setMode(m) { mode = m; render(); restartIfPlaying(); }
+document.querySelectorAll('.mode').forEach(el => el.addEventListener('click', () => setMode(el.dataset.m)));
+$('modeSel').innerHTML = [...document.querySelectorAll('.mode')].map(el => '<option value="' + el.dataset.m + '">' + el.textContent + '</option>').join('');
+$('modeSel').addEventListener('change', e => setMode(e.target.value));
+$('play').addEventListener('click', () => { if (playing()) stop(); else start(); });
+$('tempo').addEventListener('input', e => { bpmBy[mode] = +e.target.value; info(); });
+document.querySelectorAll('#reps button').forEach(b => b.addEventListener('click', () => { repsBy[mode] = +b.dataset.r; fillScale(); info(); }));
+$('span').addEventListener('change', e => { span = e.target.value; load(user, !location.hash); });
+$('tNote').addEventListener('change', e => { thump.m = +e.target.value; });
+[['tVol', 'vol'], ['tLen', 'len'], ['tSub', 'sub']].forEach(([id, k]) => $(id).addEventListener('input', e => { thump[k] = +e.target.value; info(); }));
+$('tTry').addEventListener('click', () => { initAudio(); ctx.resume().catch(() => {}); deep(ctx.currentTime + .03); });
 
-## Privacy
+/* ---------- background ---------- */
+function drawBg() {
+  const svg = $('bgfx'), W = innerWidth, H = innerHeight;
+  if (W <= 720) { svg.innerHTML = ''; return; }
+  const cell = 18, gap = 5, step = cell + gap, edge = Math.max(W * .04, W / 2 - 560) + step;
+  const cols = Math.ceil(W / step), rows = Math.ceil(H / step);
+  let seed = 7, out = '';
+  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  for (let c = 0; c < cols; c++) {
+    const x = c * step;
+    const edgeDist = Math.min(x, W - x - cell);
+    const near = Math.max(0, 1 - edgeDist / edge);
+    for (let r = 0; r < rows; r++) {
+      const v = rnd();
+      if (x > edge && x < W - edge - cell) continue;
+      const p = v * (1.1 - .5 * near);
+      const lv = p < .025 ? 4 : p < .06 ? 3 : p < .13 ? 2 : p < .28 ? 1 : 0;
+      out += '<rect x="' + x + '" y="' + r * step + '" width="' + cell + '" height="' + cell + '" rx="4" fill="var(--c' + lv + ')"/>';
+    }
+  }
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.innerHTML = out;
+}
+let bgT = 0;
+addEventListener('resize', () => { clearTimeout(bgT); bgT = setTimeout(drawBg, 150); });
+drawBg();
 
-This page does not collect, keep or sell your data.
-
-**When you load a graph**
-
-- You type a GitHub username. The page sends this username to [github-contributions-api](https://github.com/grubersjoe/github-contributions-api).
-- This service is not part of this page. Another person operates it. It reads public contribution data from GitHub.
-- The service sends back the number of contributions for each day. The page uses these numbers only to show the graph and to make sound.
-- The page does not keep the username or the numbers. When you close the page, they are gone.
-
-**What the page does not do**
-
-- It does not use cookies.
-- It does not use analytics or tracking.
-- It does not save data on your device.
-- It sends the username only to the contribution service. It sends no other data.
-- It does not use your microphone or camera.
-
-**Sound**
-
-- Your browser makes all sound on your device. No audio leaves your device.
-
-**Services that you connect to**
-
-- GitHub Pages hosts this page. GitHub can record your IP address when the page loads. Read the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
-- The contribution service can record your IP address and the username that you type. We do not control this service.
-- All fonts and files load from this website. The page does not load files from other websites.
-
-**Good to know**
-
-- The page shows public contributions only. Private contributions show only if the account owner turns them on in GitHub.
-- A link such as `…/#octocat` keeps the username in your browser history. Your browser does not send this part of the link to a server.
-
-**Questions:** open an [issue](https://github.com/hseeberg/contribution-music/issues).
-
-## How it works
-
-- Static files only: `index.html`, `og.png` and the `fonts/` folder. No build step, no server.
-- All sound is made in the browser with the Web Audio API.
-- If a username does not exist, the field says so. If the data service is down, the page keeps the last graph or shows a sample, and the button changes to **Try again**.
-
-## Credits
-
-- Font: [Mona Sans](https://github.com/github/mona-sans) by GitHub, SIL Open Font License 1.1. See `fonts/LICENSE.txt`.
-- Data: [github-contributions-api](https://github.com/grubersjoe/github-contributions-api) by grubersjoe.
-
-## Good to know
-
-- No sound on iPhone? Turn off silent mode.
+/* ---------- boot ---------- */
+const tn = [];
+for (let m = 28; m <= 48; m++) tn.push('<option value="' + m + '">' + nn(m) + ' · ' + Math.round(hz(m)) + ' Hz</option>');
+$('tNote').innerHTML = tn.join('');
+$('tNote').value = thump.m;
+$('tVol').value = thump.vol;
+$('tLen').value = thump.len;
+$('tSub').value = thump.sub;
+const h0 = decodeURIComponent(location.hash.slice(1));
+if (validUser(h0)) load(h0); else load('hseeberg', true);
+}
+</script>
+</body>
+</html>
