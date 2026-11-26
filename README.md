@@ -5,6 +5,7 @@ Turn any GitHub contribution graph into music.
 ![Contribution Music: a GitHub contribution graph with a pink playhead](og.png)
 
 - **Play it:** https://hseeberg.github.io/contribution-music/
+- **Source code:** https://github.com/hseeberg/contribution-music
 - **Open a user directly:** `https://hseeberg.github.io/contribution-music/#USERNAME`
 
 ## How to use
@@ -24,7 +25,7 @@ All styles except Drums and Chords read each week from top to bottom. In most of
 | **90s Techno** | 140 BPM | Kick on every beat, offbeat bass and open hi-hats, supersaw stabs. Chords: Am, Dm, F, G. |
 | **Drum & Bass** | 174 BPM | Fast breakbeat, deep sub bass, electric piano. Chords: Am7, Dm7, Fmaj7, Em7. |
 | **Hip-hop** | 88 BPM | Swung boom bap beat, round bass, vibraphone. Chords: Am9, Dm9, Fmaj7, E7. |
-| **Blues** | 96 BPM | Swung shuffle, boogie bass, harmonica. The weeks follow the 12-bar blues in A. |
+| **Rap** | 140 BPM | Half-time trap beat, heavy 808 bass, rolling hi-hats, bell melody. Chords: Am, F, Dm, E. |
 | **Viking** | 110 BPM | Frame drum, lyre and a low drone in D minor pentatonic. |
 | **Drums** | 110 BPM | Read left to right. Each row is one drum. |
 | **Melody** | 110 BPM | Each week is one 7-beat bar. Week activity picks the scale. A Sunday thump marks each bar. |
