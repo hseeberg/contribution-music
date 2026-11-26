@@ -37,9 +37,8 @@ Each style keeps its own tempo. Change it with the **Tempo** slider.
 
 - **Play range:** drag the two handles under the graph to choose the first and last week. Arrow keys, Page Up/Down and Home/End also work.
 - **Skip long silences:** a run of empty weeks becomes one bar of rest.
-- **Fit to activity:** trims to the first and last active week.
+- **Trim empty start and end:** on by default. Playback starts at the first active week and ends at the last one. Turn it off to play every week.
 - **Time range:** since the first contribution, or the last 12 months.
-- **Try your own pattern:** click a square to make it brighter. **Undo my changes** restores the real data.
 
 ## Privacy
 
