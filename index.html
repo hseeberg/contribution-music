@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contribution Music</title>
-<meta name="description" content="Turn any GitHub contribution graph into music. Five styles: 80s, Viking, Drums, Melody and Chords.">
+<meta name="description" content="Turn any GitHub contribution graph into music. Nine styles: 80s, 90s Techno, Drum &amp; Bass, Hip-hop, Rap, Viking, Drums, Melody and Chords.">
 <link rel="canonical" href="https://hseeberg.github.io/contribution-music/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Contribution Music">
 <meta property="og:title" content="Contribution Music">
-<meta property="og:description" content="Turn any GitHub contribution graph into music. Five styles: 80s, Viking, Drums, Melody and Chords.">
+<meta property="og:description" content="Turn any GitHub contribution graph into music. Nine styles: 80s, 90s Techno, Drum &amp; Bass, Hip-hop, Rap, Viking, Drums, Melody and Chords.">
 <meta property="og:url" content="https://hseeberg.github.io/contribution-music/">
 <meta property="og:image" content="https://hseeberg.github.io/contribution-music/og.png">
 <meta property="og:image:width" content="1200">
@@ -58,6 +58,8 @@ a{color:inherit}
 .okmark svg{width:18px;height:18px}
 .addr button{border:0;background:var(--go);color:#fff;font:inherit;font-weight:700;padding:0 20px;cursor:pointer;white-space:nowrap;min-width:96px}
 .addr.busy button{cursor:progress;opacity:.85}
+.addr.quiet button{background:transparent;color:var(--mute);box-shadow:inset 1px 0 0 var(--line)}
+.addr.quiet button:hover{color:var(--ink)}
 .status{display:flex;gap:8px;align-items:flex-start;justify-content:center;font-size:14px;min-height:1.6em;max-width:640px;color:var(--ink);text-align:left}
 .status:empty{display:none}
 .status p{margin:0}
@@ -171,7 +173,8 @@ dialog#privacy::backdrop{background:rgb(1 4 9 / .6)}
 .dlg form{margin:0;text-align:right}
 @media(max-width:720px){.row{grid-template-columns:minmax(0,1fr)}#grid{grid-template-columns:1.3em repeat(var(--n),minmax(0,1fr)) 6em}#grid.wide{grid-template-columns:1.3em repeat(var(--n),14px) 6em}.map{padding-left:4px}}
 @media(max-width:600px){.modes{display:none}.modesel{display:block}}
-@media(max-width:420px){.mode{padding:8px 12px}.play{min-width:0;flex:1}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
+@media(max-width:600px){.play{min-width:52px;width:52px;padding:0}.play svg{width:18px;height:18px}.play span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.seg button{padding:6px 11px}}
+@media(max-width:420px){.mode{padding:8px 12px}.addr .host{padding-left:14px;font-size:15px}.addr input{font-size:16px}.addr button{padding:0 14px}}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}.cell{transition:none}.cell.hit{transform:none}}
 </style>
 </head>
@@ -439,6 +442,12 @@ function setField(state) {
   f.classList.toggle('is-retry', state === 'retry');
   $('loadBtn').textContent = state === 'busy' ? 'Loading…' : state === 'retry' ? 'Try again' : 'Load graph';
   $('loadBtn').disabled = state === 'busy';
+  updateLoadBtn();
+}
+/* Load is quiet (still usable) until the field holds a name that is not already shown */
+function updateLoadBtn() {
+  const f = $('userForm'), v = $('user').value.trim();
+  f.classList.toggle('quiet', !f.classList.contains('is-retry') && !f.classList.contains('busy') && (!v || (v === user && !$('okMark').hidden)));
 }
 function fail(kind, u, demo) {
   if (!loaded) { sample = true; build(sampleList()); render(); }
@@ -1034,7 +1043,7 @@ $('userForm').addEventListener('submit', e => {
   if (!validUser(u)) { setField('invalid'); setStatus('err', ['“' + u + '” can’t be a GitHub username. Use only letters, numbers and single hyphens, up to 39 characters.']); $('user').focus(); return; }
   if (location.hash !== '#' + u) location.hash = u; else load(u);
 });
-$('user').addEventListener('input', () => { const f = $('userForm'); if (f.classList.contains('invalid') || f.classList.contains('is-retry') || !$('okMark').hidden) setField('idle'); });
+$('user').addEventListener('input', () => { const f = $('userForm'); if (f.classList.contains('invalid') || f.classList.contains('is-retry') || !$('okMark').hidden) setField('idle'); else updateLoadBtn(); });
 window.addEventListener('hashchange', () => { const u = decodeURIComponent(location.hash.slice(1)); if (validUser(u)) load(u); });
 const colFromX = x => { const r = $('trim').getBoundingClientRect(); return Math.floor((x - r.left) / r.width * nW); };
 grid.addEventListener('pointerdown', e => {
